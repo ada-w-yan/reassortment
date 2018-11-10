@@ -1,0 +1,20 @@
+Package: reassortment
+Title: Modelling Evolution of Strain Mixtures Including Reassortment
+Version: 0.0.0.9000
+Authors@R: c(
+    person("Ada", "Yan", email = "a.yan@imperial.ac.uk", role = c("aut", "cre")),
+    person("Daniel", "Goldhill", email = "d.goldhill@imperial.ac.uk", role = "aut"))
+Description: Modelling Evolution of Strain Mixtures Including Reassortment
+Depends: R (>= 3.4.4)
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+URL: https://github.com/ada-w-yan/reassortment
+BugReports: https://github.com/ada-w-yan/reassortment/issues
+Suggests:
+    testthat,
+    knitr,
+    rmarkdown
+Imports:
+    magrittr
+RoxygenNote: 6.0.1
