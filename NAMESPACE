@@ -3,7 +3,7 @@
 export(plot_segments)
 export(plot_strains)
 export(run_mutation_model_no_coinfection)
-export(run_reassortment_model)
+export(simulate_evolution)
 export(vnapply)
 import(ggplot2)
 importFrom(magrittr,"%>%")

@@ -2,7 +2,7 @@
 % Please edit documentation in R/reassortment_model.R
 \name{run_mutation_model_no_coinfection}
 \alias{run_mutation_model_no_coinfection}
-\title{Simulate evolution of mixture by reassortment}
+\title{Simulate evolution of mixture by mutation, with no co-infection}
 \usage{
 run_mutation_model_no_coinfection(iv, fitness, burst_size, pop_size,
   generations, mutation_prob)
@@ -30,5 +30,5 @@ matrix of dim c(generations, n_strains).  Proportion of virions of
 each strain for each generation.
 }
 \description{
-Simulate evolution of mixture by reassortment
+Simulate evolution of mixture by mutation, with no co-infection
 }
