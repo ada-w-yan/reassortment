@@ -103,6 +103,7 @@ simulate_evolution <- function(iv, fitness, burst_size, n_cells,
   # assign strains to initial virus population and
   # decide which virion is in which cell (assume Poisson distribution)
   virus_popn <- round_preserve_sum(normalise(iv) * pop_size) %>%
+      enumerate_popn %>%
     assign_cells
   
   colnames(virus_popn) <- c("strain", "cell_no")
@@ -113,16 +114,11 @@ simulate_evolution <- function(iv, fitness, burst_size, n_cells,
   
   # run simulation
   for(generation in 2:generations)  {
-    # get list of cells infected by at least one virion
-    infected_cells <- unique(virus_popn[,"cell_no"])
     
     # determine the number of virions produced by a given cell, and what strains they belong to
-    make_new_popn <- function(infected_cell) {
-      # determine which virions infected the cell
-      virions_in_cell <- virus_popn[,"cell_no"]==infected_cell
+    make_new_popn <- function(virus_popn) {
       # determine the number of virions of each strain that infected the cell
-      strains_in_cell <- virus_popn[virions_in_cell,"strain"] %>%
-        sum_strains
+      strains_in_cell <- sum_strains(virus_popn)
       # determine the burst size from this cell.
       # If the burst size is MOI-independent, then it is burst_size *
       # the average fitness of the co-infecting virions.
@@ -179,14 +175,16 @@ simulate_evolution <- function(iv, fitness, burst_size, n_cells,
       }
       
       # mutate the newly produced strain population
-      new_popn <- mutate_popn(new_popn, mutation_prob)
+      if(mutation_prob > 0) {
+          new_popn <- mutate_popn(new_popn, mutation_prob)   
+      }
       new_popn
     }
     
     # apply the above function to all infected cells and combine the results
-    virus_popn <- vapply(infected_cells, make_new_popn, numeric(n_strains)) %>%
-      rowSums %>%
-      enumerate_popn
+    virus_popn <- tapply(virus_popn[,"strain"], virus_popn[,"cell_no"], make_new_popn)
+    virus_popn <- do.call(rbind, virus_popn)
+    virus_popn <- enumerate_popn(colSums(virus_popn))
     
     # cap virus population (assume the effective reproduction number is 1
     # and thus the virus population is constant)
@@ -278,7 +276,7 @@ enumerate_popn <- function(virus_popn) {
 #' 1 in the second entry indicates MT PA
 #' @return the strain number of the virion -- MM = 1, MW = 2, WM = 3, WW = 4
 segments_to_strain <- function(idx) {
-  -(2 * idx[1] + idx[2] + 1) + 5
+  -(2 * idx[,1] + idx[,2] + 1) + 5
 }
 
 #' takes a vector of length equal to the number of virions, 
@@ -289,8 +287,8 @@ segments_to_strain <- function(idx) {
 #' @return numeric vector of length 4, with the number of virions
 #' in each of the 4 strains
 sum_strains <- function(strains) {
-  n_strains <- 4
-  vnapply(seq_len(n_strains), function(x) sum(strains == x))
+    n_strains <- 4
+    vnapply(seq_len(n_strains), function(x) sum(strains == x))
 }
 
 #' returns the number of newly produced virions after reassortment and before mutation
@@ -300,11 +298,10 @@ sum_strains <- function(strains) {
 #' @param burst_size burst size from a given cell
 #' @return numeric vector of length 4, with the number of newly produced virions
 #' in each of the 4 strains
-#' @importFrom magrittr %>%
 make_and_package_segments <- function(prob_strain, burst_size) {
   strain_segments <- matrix(c(1, 1, 1, 0, 0, 1, 0, 0), ncol = 2, byrow = TRUE)
-  prob_mt_segment <- (strain_segments * prob_strain) %>% colSums
+  prob_mt_segment <- colSums(strain_segments * prob_strain)
   segments <- vapply(prob_mt_segment, function(x) rbinom(burst_size, 1, x), numeric(burst_size))
-  strains <- apply(segments, 1, segments_to_strain) %>% sum_strains
+  strains <- sum_strains(segments_to_strain(segments))
   strains
 }
