@@ -64,3 +64,43 @@ round_preserve_sum <- function(vec) {
     vec_out[round_up_idx] <- ceiling(vec[round_up_idx])
     vec_out
 }
+
+#' get short hash of current commit
+#' 
+#' @param repo_dir repo directory
+#' @return character vector containing short hash of current commit
+#' @export
+get_hash <- function(repo_dir) {
+  if(missing(repo_dir)) {
+    repo_dir <- getwd()
+  }
+  command <- paste("git -C", repo_dir, "rev-parse --short HEAD")
+  hash <- system(command, intern = TRUE)
+  hash
+}
+
+#' make folder to store results and (optional) store hash of repo
+#' 
+#' @param folder_name folder name
+#' @param base_dir directory in which to make folder
+#' @return NULL
+#' @importFrom magrittr %>% %T>%
+#' @export
+make_results_folder <- function(folder_name, base_dir, touch_hash = TRUE) {
+  if(missing(base_dir)) {
+    base_dir <- file.path(getwd(), "results/")
+  }
+  
+  # make folder (warn if exists)
+  dir_name <- paste0(base_dir, folder_name) %T>%
+  dir.create(., recursive = TRUE)
+
+  # make file named after current has of repo to which base_dir belongs
+  if(touch_hash) {
+    get_hash(base_dir) %>%
+      paste0("touch ", dir_name, "/", .) %>%
+    system
+  }
+  
+  invisible(NULL)
+}
