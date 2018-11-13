@@ -102,16 +102,16 @@ run_analyses <- function(sim_name, pop_size = 1e6, hash) {
          filename = sim_name))
 }
 
-obj <- setup_cluster()
-analysis_names <- c("reassort_MOI_dependent",
-                    "reassort_MOI_independent",
-                    "mutate_MOI_dependent",
-                    "mutate_MOI_independent",
-                    "mutate_MOI_dependent_by_fitness",
-                    "mutate_MOI_independent_by_fitness",
-                    "mutate_MOI_dependent_one_strain",
-                    "mutate_MOI_independent_one_strain",
-                    "mutate_no_coinfection")
-hash <- get_hash()
-job <- obj$lapply(analysis_names, function(x) run_analyses (x, 1e4, hash))
+# obj <- setup_cluster()
+# analysis_names <- c("reassort_MOI_dependent",
+#                     "reassort_MOI_independent",
+#                     "mutate_MOI_dependent",
+#                     "mutate_MOI_independent",
+#                     "mutate_MOI_dependent_by_fitness",
+#                     "mutate_MOI_independent_by_fitness",
+#                     "mutate_MOI_dependent_one_strain",
+#                     "mutate_MOI_independent_one_strain",
+#                     "mutate_no_coinfection")
+# hash <- get_hash()
+# job <- obj$lapply(analysis_names, function(x) run_analyses (x, 1e4, hash))
 # semireligious_kob
