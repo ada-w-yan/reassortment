@@ -101,7 +101,6 @@ make_results_folder <- function(folder_name, base_dir, hash) {
   # make folder (warn if exists)
   dir_name <- paste0(base_dir, folder_name, "/") %T>%
     dir.create(., recursive = TRUE)
-  
   # make file named after current has of repo to which base_dir belongs
   if(!missing(hash)) {
     system(paste0("touch ", dir_name, hash))

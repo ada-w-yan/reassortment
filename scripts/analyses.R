@@ -42,8 +42,7 @@ run_analyses <- function(sim_name, pop_size = 1e6, hash) {
                                                      MOI_dependent_burst_size = TRUE,
                                                      choose_strain_by_fitness = FALSE,
                                                      one_strain_produced = FALSE,
-                                                     reassort = TRUE,
-                                                     sim_name = sim_name),
+                                                     reassort = TRUE),
          "reassort_MOI_independent" =   sim_fn(mutation_prob = 0,
          coinfection = TRUE,
          MOI_dependent_burst_size = FALSE,
@@ -106,4 +105,4 @@ run_analyses <- function(sim_name, pop_size = 1e6, hash) {
 #                     "mutate_no_coinfection")
 # hash <- get_hash()
 # job <- obj$lapply(analysis_names, function(x) run_analyses (x, 1e4, hash))
-# loverless_americanpainthorse
+# boarish_easternglasslizard
