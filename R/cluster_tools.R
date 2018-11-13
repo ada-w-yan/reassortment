@@ -6,7 +6,7 @@
 setup_cluster <- function(){
     user_options <- get_user_options()
     setwd(user_options$wd)
-    sources <- list.files(path = user_options$wd, 
+    sources <- list.files(path = "scripts", 
                             pattern = "\\.R", 
                             recursive = FALSE,
                             full.names = TRUE)
@@ -16,7 +16,8 @@ setup_cluster <- function(){
     ## Setup contexts
     context::context_log_start()
     root <- "contexts"
-    packages <- list(attached="reassortment")
+    packages <- list(attached = c("reassortment", "ggplot2", "magrittr"),
+                     loaded = "reshape2")
     ctx <- context::context_save(packages=packages,path=root, sources=sources,package_sources=src)
     
     ## Submit setup to cluster
