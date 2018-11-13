@@ -38,37 +38,37 @@ probabilistic_round <- function(x) {
 #' @param vec numeric vector which sums to an integer
 #' @return numeric vector of the same length as vec: rounded vector
 round_preserve_sum <- function(vec) {
-    
-    # if vector already integers, do nothing
-# old implementation probably safer, but slower...
-    # if(isTRUE(all.equal(vec - round(vec), numeric(length(vec))))) {
-    #     return(vec)
-    # }
+  
+  # if vector already integers, do nothing
+  # old implementation probably safer, but slower...
+  # if(isTRUE(all.equal(vec - round(vec), numeric(length(vec))))) {
+  #     return(vec)
+  # }
   # ever older implementation -- all.equal(vec, round(vec)) -- fails for large values in vec
   if(all(vec - round(vec) - numeric(length(vec)) == 0)) {
     return(vec)
   }
-    
-    # if vector doesn't sum to integer, 
-    # round down so it does sum to an integer (ensuring positivity)
-    sum_vec <- sum(vec)
-    rounded_sum <- round(sum_vec)
-    fractional_part <- rounded_sum - sum_vec
-    if(any(rounded_sum - sum_vec != 0)) {
-      # old implementation probably safer, but slower...
+  
+  # if vector doesn't sum to integer, 
+  # round down so it does sum to an integer (ensuring positivity)
+  sum_vec <- sum(vec)
+  rounded_sum <- round(sum_vec)
+  fractional_part <- rounded_sum - sum_vec
+  if(any(rounded_sum - sum_vec != 0)) {
+    # old implementation probably safer, but slower...
     # if(!isTRUE(all.equal(rounded_sum - sum_vec, 0))) {
-        larger_idx <- which(vec > fractional_part)
-        # subtract fractional_part from one of those groups, chosen randomly
-        subtract_idx <- sample(larger_idx, 1)
-        vec[subtract_idx] <- vec[subtract_idx] - fractional_part
-    }
-    
-    n_round_up <- rounded_sum - sum(floor(vec))
-    round_up_idx <- sample.int(length(vec), size = n_round_up, replace = FALSE,
-                               prob = vec - floor(vec))
-    vec_out <- floor(vec)
-    vec_out[round_up_idx] <- ceiling(vec[round_up_idx])
-    vec_out
+    larger_idx <- which(vec > fractional_part)
+    # subtract fractional_part from one of those groups, chosen randomly
+    subtract_idx <- sample(larger_idx, 1)
+    vec[subtract_idx] <- vec[subtract_idx] - fractional_part
+  }
+  
+  n_round_up <- rounded_sum - sum(floor(vec))
+  round_up_idx <- sample.int(length(vec), size = n_round_up, replace = FALSE,
+                             prob = vec - floor(vec))
+  vec_out <- floor(vec)
+  vec_out[round_up_idx] <- ceiling(vec[round_up_idx])
+  vec_out
 }
 
 #' get short hash of current commit
@@ -98,15 +98,15 @@ make_results_folder <- function(folder_name, base_dir, touch_hash = TRUE) {
   }
   
   # make folder (warn if exists)
-  dir_name <- paste0(base_dir, folder_name) %T>%
-  dir.create(., recursive = TRUE)
-
+  dir_name <- paste0(base_dir, folder_name, "/") %T>%
+    dir.create(., recursive = TRUE)
+  
   # make file named after current has of repo to which base_dir belongs
   if(touch_hash) {
     get_hash(base_dir) %>%
-      paste0("touch ", dir_name, "/", .) %>%
-    system
+      paste0("touch ", dir_name, .) %>%
+      system
   }
   
-  invisible(NULL)
+  dir_name
 }
