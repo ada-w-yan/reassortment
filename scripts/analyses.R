@@ -15,7 +15,7 @@ run_analyses <- function(sim_name, pop_size = 1e6, hash) {
              MOI_dependent_burst_size,
              choose_strain_by_fitness,
              one_strain_produced,
-             reassort, filename, hash)  {
+             reassort)  {
       results <- simulate_evolution(iv, fitness, burst_size, n_cells, pop_size,
                                     generations, mutation_prob,
                                     coinfection,
@@ -23,7 +23,7 @@ run_analyses <- function(sim_name, pop_size = 1e6, hash) {
                                     choose_strain_by_fitness,
                                     one_strain_produced,
                                     reassort)
-      dir_name <- make_results_folder(filename, hash = hash)
+      dir_name <- make_results_folder(sim_name, hash = hash)
       saveRDS(results, paste0(dir_name, "results.rds"))
       g <- plot_strains(results)
       ggsave(paste0(dir_name, "strains.pdf"), g, width = 10, height = 10, units = "cm")
@@ -43,63 +43,55 @@ run_analyses <- function(sim_name, pop_size = 1e6, hash) {
                                                      choose_strain_by_fitness = FALSE,
                                                      one_strain_produced = FALSE,
                                                      reassort = TRUE,
-                                                     filename = sim_name),
+                                                     sim_name = sim_name),
          "reassort_MOI_independent" =   sim_fn(mutation_prob = 0,
          coinfection = TRUE,
          MOI_dependent_burst_size = FALSE,
          choose_strain_by_fitness = FALSE,
          one_strain_produced = FALSE,
-         reassort = TRUE,
-         filename = sim_name),
+         reassort = TRUE),
   "mutate_MOI_dependent" = sim_fn(mutation_prob,
          coinfection = TRUE,
          MOI_dependent_burst_size = TRUE,
          choose_strain_by_fitness = FALSE,
          one_strain_produced = FALSE,
-         reassort = FALSE,
-         filename = sim_name),
+         reassort = FALSE),
   "mutate_MOI_independent" = sim_fn(mutation_prob,
          coinfection = TRUE,
          MOI_dependent_burst_size = FALSE,
          choose_strain_by_fitness = FALSE,
          one_strain_produced = FALSE,
-         reassort = FALSE,
-         filename = sim_name),
+         reassort = FALSE),
   "mutate_MOI_dependent_by_fitness" = sim_fn(mutation_prob,
          coinfection = TRUE,
          MOI_dependent_burst_size = TRUE,
          choose_strain_by_fitness = TRUE,
          one_strain_produced = FALSE,
-         reassort = FALSE,
-         filename = sim_name),
+         reassort = FALSE),
   "mutate_MOI_independent_by_fitness" = sim_fn(mutation_prob,
          coinfection = TRUE,
          MOI_dependent_burst_size = FALSE,
          choose_strain_by_fitness = TRUE,
          one_strain_produced = FALSE,
-         reassort = FALSE,
-         filename = sim_name),
+         reassort = FALSE),
   "mutate_MOI_dependent_one_strain" = sim_fn(mutation_prob,
          coinfection = TRUE,
          MOI_dependent_burst_size = TRUE,
          choose_strain_by_fitness = FALSE,
          one_strain_produced = TRUE,
-         reassort = FALSE,
-         filename = sim_name),
+         reassort = FALSE),
   "mutate_MOI_independent_one_strain" = sim_fn(mutation_prob,
          coinfection = TRUE,
          MOI_dependent_burst_size = FALSE,
          choose_strain_by_fitness = FALSE,
          one_strain_produced = TRUE,
-         reassort = FALSE,
-         filename = sim_name),
+         reassort = FALSE),
   "mutate_no_coinfection" = sim_fn(mutation_prob,
          coinfection = FALSE,
          MOI_dependent_burst_size = FALSE,
          choose_strain_by_fitness = FALSE,
          one_strain_produced = FALSE,
-         reassort = FALSE,
-         filename = sim_name))
+         reassort = FALSE))
 }
 
 # obj <- setup_cluster()
@@ -114,4 +106,4 @@ run_analyses <- function(sim_name, pop_size = 1e6, hash) {
 #                     "mutate_no_coinfection")
 # hash <- get_hash()
 # job <- obj$lapply(analysis_names, function(x) run_analyses (x, 1e4, hash))
-# semireligious_kob
+# loverless_americanpainthorse

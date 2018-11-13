@@ -95,7 +95,7 @@ get_hash <- function(repo_dir) {
 #' @export
 make_results_folder <- function(folder_name, base_dir, hash) {
   if(missing(base_dir)) {
-    base_dir <- file.path(getwd(), "results/")
+    base_dir <- paste0(file.path(getwd(), "results"), "/")
   }
   
   # make folder (warn if exists)
@@ -103,7 +103,7 @@ make_results_folder <- function(folder_name, base_dir, hash) {
     dir.create(., recursive = TRUE)
   
   # make file named after current has of repo to which base_dir belongs
-  if(~missing(hash)) {
+  if(!missing(hash)) {
     system(paste0("touch ", dir_name, hash))
   }
   
