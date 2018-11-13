@@ -112,6 +112,8 @@ simulate_evolution <- function(iv, fitness, burst_size, n_cells,
   results <- matrix(0, nrow = generations, ncol = n_strains)
   results[1,] <- sum_strains(virus_popn[,"strain"])
   
+  mutate_popn <- mutate_popn_wrapper(mutation_prob)
+  
   # run simulation
   for(generation in 2:generations)  {
     
@@ -176,7 +178,7 @@ simulate_evolution <- function(iv, fitness, burst_size, n_cells,
       
       # mutate the newly produced strain population
       if(mutation_prob > 0) {
-          new_popn <- mutate_popn(new_popn, mutation_prob)   
+          new_popn <- mutate_popn(new_popn)   
       }
       new_popn
     }
@@ -230,11 +232,11 @@ make_mutation_matrix <- function(mutation_prob) {
 #' @return numeric vector of length 4, with the number of virions
 #' in each of the 4 strains, after mutation
 #' @importFrom magrittr %>%
-mutate_popn <- function(virus_popn, mutation_prob) {
-  mutation_matrix <- make_mutation_matrix(mutation_prob)
-  (mutation_matrix %*% matrix(virus_popn, ncol = 1)) %>%
-    as.numeric %>%
-    round_preserve_sum
+mutate_popn_wrapper <- function(mutation_prob) {
+  mutation_matrix <<- make_mutation_matrix(mutation_prob)
+  function(virus_popn) {
+    round_preserve_sum(as.numeric(mutation_matrix %*% matrix(virus_popn, ncol = 1)))
+  }
 }
 
 #' old implementation of reassortment

@@ -4,7 +4,7 @@ run_timing <- function() {
   fitness <- c(1,0,1.1,1)
   n_cells <- 1e4
   pop_size <- 1000
-  mutation_prob <- 2e-5 #Russell et al. (2012)
+  mutation_prob <- .09#2e-5 #Russell et al. (2012)
   burst_size <- 10
   generations <- 20
   
@@ -30,11 +30,11 @@ run_timing <- function() {
   sim_fn <- sim_wrapper(iv, fitness, burst_size, n_cells, pop_size,
                         generations)
   
-  sim_fn(mutation_prob,
+  sim_fn(mutation_prob = 0,
          coinfection = TRUE,
          MOI_dependent_burst_size = TRUE,
          choose_strain_by_fitness = FALSE,
          one_strain_produced = FALSE,
-         reassort = FALSE,
+         reassort = TRUE,
          filename = "results_mutate_MOI_dependent")
 }

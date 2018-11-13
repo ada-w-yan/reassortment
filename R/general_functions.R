@@ -40,17 +40,23 @@ probabilistic_round <- function(x) {
 round_preserve_sum <- function(vec) {
     
     # if vector already integers, do nothing
-    # old implementation -- all.equal(vec - round(vec)) -- fails for large values in vec
-    if(isTRUE(all.equal(vec - round(vec), numeric(length(vec))))) {
-        return(vec)
-    }
+# old implementation probably safer, but slower...
+    # if(isTRUE(all.equal(vec - round(vec), numeric(length(vec))))) {
+    #     return(vec)
+    # }
+  # ever older implementation -- all.equal(vec, round(vec)) -- fails for large values in vec
+  if(all(vec - round(vec) - numeric(length(vec)) == 0)) {
+    return(vec)
+  }
     
     # if vector doesn't sum to integer, 
     # round down so it does sum to an integer (ensuring positivity)
     sum_vec <- sum(vec)
     rounded_sum <- round(sum_vec)
     fractional_part <- rounded_sum - sum_vec
-    if(!isTRUE(all.equal(rounded_sum - sum_vec, 0))) {
+    if(any(rounded_sum - sum_vec != 0)) {
+      # old implementation probably safer, but slower...
+    # if(!isTRUE(all.equal(rounded_sum - sum_vec, 0))) {
         larger_idx <- which(vec > fractional_part)
         # subtract fractional_part from one of those groups, chosen randomly
         subtract_idx <- sample(larger_idx, 1)
