@@ -223,14 +223,13 @@ make_mutation_matrix <- function(mutation_prob) {
   mutation_matrix
 }
 
-#' mutate a population of virions
+#' make function to mutate a population of virions
 #' 
-#' @param virus_popn numeric vector of length 4, with the number of virions
-#' in each of the 4 strains
 #' @param mutation_prob probability of mutation for each virion.  Assume same
 #' for pb1 and pa.
-#' @return numeric vector of length 4, with the number of virions
-#' in each of the 4 strains, after mutation
+#' @return function that takes the argument virus_popn: numeric vector of 
+#' length 4, with the number of virions in each of the 4 strains, and outputs
+#' the same vector but with mutated virions
 #' @importFrom magrittr %>%
 mutate_popn_wrapper <- function(mutation_prob) {
   mutation_matrix <<- make_mutation_matrix(mutation_prob)

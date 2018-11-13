@@ -4,12 +4,17 @@
 \alias{make_results_folder}
 \title{make folder to store results and (optional) store hash of repo}
 \usage{
-make_results_folder(folder_name, base_dir, touch_hash = TRUE)
+make_results_folder(folder_name, base_dir, hash)
 }
 \arguments{
 \item{folder_name}{folder name}
 
 \item{base_dir}{directory in which to make folder}
+
+\item{hash}{string -- make file with this name in folder}
+}
+\value{
+name of created directory
 }
 \description{
 make folder to store results and (optional) store hash of repo
