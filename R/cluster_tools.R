@@ -6,7 +6,7 @@
 setup_cluster <- function(){
     user_options <- get_user_options()
     setwd(user_options$wd)
-    sources <- list.files(path = wd, 
+    sources <- list.files(path = user_options$wd, 
                             pattern = "\\.R", 
                             recursive = FALSE,
                             full.names = TRUE)
