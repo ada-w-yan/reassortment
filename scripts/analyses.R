@@ -4,7 +4,7 @@ run_analyses <- function(sim_name, pop_size = 1e6, hash) {
   fitness <- c(1,0,1.1,1)
   MOI <- .1
   n_cells <- round(pop_size / MOI)
-  mutation_prob <- .09#2e-5 #Russell et al. (2012)
+  mutation_prob <- 2e-5 #Russell et al. (2012)
   burst_size <- 10
   generations <- 20
   
@@ -104,5 +104,5 @@ run_analyses <- function(sim_name, pop_size = 1e6, hash) {
 #                     "mutate_MOI_independent_one_strain",
 #                     "mutate_no_coinfection")
 # hash <- get_hash()
-# job <- obj$lapply(analysis_names, function(x) run_analyses (x, 1e4, hash))
-# boarish_easternglasslizard
+# job <- obj$lapply(analysis_names, function(x) run_analyses (x, 1e5, "cb1696d"))
+# spherical_chipmunk
