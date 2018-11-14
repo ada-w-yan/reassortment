@@ -3,15 +3,16 @@
 #' @param results output of run_xxx_model  
 #' @import ggplot2
 #' @export
-plot_strains <- function(results) {
+plot_strains <- function(results, zoom = FALSE) {
   colours <- c("purple", "red", "blue", "black")
   results <- as.data.frame(results)
   results$gen <- seq_len(nrow(results))
   results_melt <- reshape2::melt(results, id.var = "gen")
+  ymax <- ifelse(zoom, max(results$WM), 1)
   ggplot(results_melt, aes(x = gen, y = value, color = variable, group = variable)) +
     geom_line() +
     theme_bw() +
-    coord_cartesian(ylim = c(0, 1), expand = FALSE) +
+    coord_cartesian(ylim = c(0, ymax), expand = FALSE) +
     xlab("Generation") +
     ylab("Proportion of viral load") +
     scale_colour_manual("Strain", values = colours) +

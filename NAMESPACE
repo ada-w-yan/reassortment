@@ -2,6 +2,8 @@
 
 export(get_hash)
 export(get_user_options)
+export(get_vars_from_list_with_check)
+export(list_vars_from_environment)
 export(make_results_folder)
 export(plot_segments)
 export(plot_strains)

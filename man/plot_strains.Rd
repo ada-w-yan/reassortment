@@ -4,7 +4,7 @@
 \alias{plot_strains}
 \title{plot results of run_xxx_model by strain}
 \usage{
-plot_strains(results)
+plot_strains(results, zoom = FALSE)
 }
 \arguments{
 \item{results}{output of run_xxx_model}

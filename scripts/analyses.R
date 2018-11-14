@@ -1,4 +1,4 @@
-run_analyses <- function(sim_name, pop_size = 1e6, hash) {
+run_analyses <- function(sim_name, prefix = "", pop_size = 1e6, hash) {
   set.seed(2)
   iv <- c(95,0,0,5) #mt,mt  mt,wt  wt,mt   wt,wt
   fitness <- c(1,0,1.1,1)
@@ -16,6 +16,15 @@ run_analyses <- function(sim_name, pop_size = 1e6, hash) {
              choose_strain_by_fitness,
              one_strain_produced,
              reassort)  {
+      
+      dir_name <- make_results_folder(paste0(prefix, "_", sim_name), hash = hash)
+      inputs1 <- ls()
+      inputs1 <- list_vars_from_environment(inputs1)
+      inputs2 <- ls(envir = parent.frame())
+      inputs2 <- list_vars_from_environment(inputs2, parent.frame(n = 1))
+      inputs <- c(inputs1, inputs2)
+      saveRDS(inputs, paste0(dir_name, "inputs.rds"))
+
       results <- simulate_evolution(iv, fitness, burst_size, n_cells, pop_size,
                                     generations, mutation_prob,
                                     coinfection,
@@ -23,7 +32,7 @@ run_analyses <- function(sim_name, pop_size = 1e6, hash) {
                                     choose_strain_by_fitness,
                                     one_strain_produced,
                                     reassort)
-      dir_name <- make_results_folder(sim_name, hash = hash)
+
       saveRDS(results, paste0(dir_name, "results.rds"))
       g <- plot_strains(results)
       ggsave(paste0(dir_name, "strains.pdf"), g, width = 10, height = 10, units = "cm")
@@ -35,7 +44,7 @@ run_analyses <- function(sim_name, pop_size = 1e6, hash) {
   
   sim_fn <- sim_wrapper(iv, fitness, burst_size, n_cells, pop_size,
                         generations)
-  
+
   switch(sim_name,
          "reassort_MOI_dependent" = sim_fn(mutation_prob = 0,
                                                      coinfection = TRUE,
@@ -105,4 +114,4 @@ run_analyses <- function(sim_name, pop_size = 1e6, hash) {
 #                     "mutate_no_coinfection")
 # hash <- get_hash()
 # job <- obj$lapply(analysis_names, function(x) run_analyses (x, 1e5, "cb1696d"))
-# spherical_chipmunk
+# dumbfounded_dartfrog

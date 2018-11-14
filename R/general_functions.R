@@ -108,3 +108,30 @@ make_results_folder <- function(folder_name, base_dir, hash) {
   
   dir_name
 }
+
+#' gather variables with given names from an environment into a list
+#' 
+#' @param var_names character vector of variable names to gather
+#' @param envir environment in which to find parameters
+#' @return list of variables with names var_names
+#' @export
+list_vars_from_environment <- function(var_names, envir = parent.frame()) {
+  env_vars <- as.list(envir)
+  env_vars <- get_vars_from_list_with_check(env_vars, var_names)
+  env_vars
+}
+
+#' extract variables from list, throwing an error if they are not found
+#' 
+#' @param x list of variables
+#' @param var_names character vector containing names of variables to extract
+#' @return list of selected variables
+#' @export
+get_vars_from_list_with_check <- function(x, var_names) {
+  missing_vars <- var_names[!(var_names %in% names (x))]
+  if(length(missing_vars) > 0) {
+    stop(paste0("variables missing from list: ", paste0(missing_vars, collapse = " ")))
+  }
+  x <- x[var_names]
+  x
+}
