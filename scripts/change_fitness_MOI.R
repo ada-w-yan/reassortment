@@ -52,6 +52,6 @@ if(FALSE) {
   reassort_pars$pop_size <- 1e3
   reassort_pars$hash <- get_hash()
   change_fitness_MOI_mutation_prob(fitness_WM, MOI[1], 0, TRUE, 1e3)
-  obj <- setup_cluster()
+  obj <- setup_cluster(n_cores = 1)
   job <- obj$enqueue_bulk(reassort_pars, change_fitness_MOI_mutation_prob)
 }

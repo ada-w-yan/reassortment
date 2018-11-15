@@ -4,7 +4,10 @@
 \alias{get_user_options}
 \title{specify user options for cluster}
 \usage{
-get_user_options()
+get_user_options(n_cores = 1)
+}
+\arguments{
+\item{n_cores}{number of cluster cores}
 }
 \value{
 a list with the working directory on the network drive; the directory

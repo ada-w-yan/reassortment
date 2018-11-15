@@ -1,10 +1,11 @@
 #' Cluster setup
 #'
 #' This function sets up an object linking to the DIDE cluster in a very crude way.
+#' @param n_cores number of cluster cores
 #' @return a didehpc::queue_didehpc object
 #' @export
-setup_cluster <- function(){
-    user_options <- get_user_options()
+setup_cluster <- function(n_cores = 1){
+    user_options <- get_user_options(n_cores)
     setwd(user_options$wd)
     sources <- list.files(path = "scripts", 
                             pattern = "\\.R", 
@@ -27,15 +28,17 @@ setup_cluster <- function(){
 
 #' specify user options for cluster
 #' 
+#' @param n_cores number of cluster cores
 #' @return a list with the working directory on the network drive; the directory
 #' in which the package code sits; and options for didehpc
 #' @export
-get_user_options <- function() {
+get_user_options <- function(n_cores = 1) {
   # wd is the working directory to run the cluster job from. 
   # This should be the user's network home drive eg. "~/net/home/reassortment"
     list(wd = "~/net/home/reassortment/",
          package_dir = "~/git_repos/reassortment/",
          cluster_options = list(didehpc.username = "ayan",
-                                didehpc.cluster = "fi--didemrchnb"))
+                                didehpc.cluster = "fi--didemrchnb",
+                                cores = n_cores))
 
 }

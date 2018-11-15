@@ -4,7 +4,10 @@
 \alias{setup_cluster}
 \title{Cluster setup}
 \usage{
-setup_cluster()
+setup_cluster(n_cores = 1)
+}
+\arguments{
+\item{n_cores}{number of cluster cores}
 }
 \value{
 a didehpc::queue_didehpc object
