@@ -1,7 +1,7 @@
 run_analyses <- function(sim_name, prefix = "", pop_size = 1e6, hash) {
   set.seed(2)
   iv <- c(95,0,0,5) #mt,mt  mt,wt  wt,mt   wt,wt
-  fitness <- c(1,0,1.1,1)
+  fitness <- c(1,1,1.1,1)
   MOI <- .1
   n_cells <- round(pop_size / MOI)
   mutation_prob <- 2e-5 #Russell et al. (2012)

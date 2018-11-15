@@ -135,3 +135,32 @@ get_vars_from_list_with_check <- function(x, var_names) {
   x <- x[var_names]
   x
 }
+
+#' turn number(s) into string for filename, replacing decimal points with "point"
+#' 
+#' @param x numeric vector
+#' @return character vector of same length as x
+#' @export
+num2str <- function(x) {
+  gsub("\\.", "point", as.character(x))
+}
+
+#' wrapper for parLapply for cluster
+#'
+#' @param run_parallel: logical: if TRUE, use parLapply, else use lapply
+#' @param x first argument of lapply
+#' @param fun second argument of lapply
+#' @return output arguments of lapply
+#' @export
+parLapply_wrapper <- function(run_parallel,x,fun,...){
+  if(run_parallel){
+    sys_info <- Sys.info()
+    if(sys_info[[1]] == "Windows"){
+      parLapply(cl = NULL, x, fun, ...)
+    } else {
+      parallel::mclapply(x, fun, ..., mc.cores = length(x))
+    }
+  } else {
+    lapply(x, fun, ...)
+  }
+}

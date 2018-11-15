@@ -14,7 +14,8 @@ BugReports: https://github.com/ada-w-yan/reassortment/issues
 Suggests:
     testthat,
     knitr,
-    rmarkdown
+    rmarkdown,
+    parallel
 Imports:
     magrittr
 RoxygenNote: 6.0.1
