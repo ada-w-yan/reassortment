@@ -156,7 +156,7 @@ parLapply_wrapper <- function(run_parallel,x,fun,...){
   if(run_parallel){
     sys_info <- Sys.info()
     if(sys_info[[1]] == "Windows"){
-      parLapply(cl = NULL, x, fun, ...)
+      parallel::parLapply(cl = NULL, x, fun, ...)
     } else {
       parallel::mclapply(x, fun, ..., mc.cores = length(x))
     }
