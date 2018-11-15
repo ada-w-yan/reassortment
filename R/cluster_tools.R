@@ -17,7 +17,7 @@ setup_cluster <- function(n_cores = 1){
     ## Setup contexts
     context::context_log_start()
     root <- "contexts"
-    packages <- list(attached = c("reassortment", "ggplot2", "magrittr"),
+    packages <- list(attached = c("reassortment", "ggplot2", "magrittr", "parallel"),
                      loaded = "reshape2")
     ctx <- context::context_save(packages=packages,path=root, sources=sources,package_sources=src)
     
