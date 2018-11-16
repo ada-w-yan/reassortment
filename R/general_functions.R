@@ -164,3 +164,25 @@ parLapply_wrapper <- function(run_parallel,x,fun,...){
     lapply(x, fun, ...)
   }
 }
+
+#' a version of lapply() that supplies FUN with both the name and the value of each component
+#' 
+#' @param X see documentation for lapply
+#' @param FUN function which takes a character vector of length 1 as a first argument and 
+#' something else as a second argument
+#' @return see documentation for lapply
+#' @export
+lapply_w_name <- function(X, FUN){
+  Map(FUN, names(X), unname(X))
+}
+
+#' a version of apply() that matches the dimnames of X to the arguments of FUN
+#' 
+#' @param X see documentation for apply
+#' @param MARGIN see documentation for apply
+#' @param FUN see documentation for apply
+#' @return see documentation for apply
+#' @export
+apply_named_args <- function(X, MARGIN, FUN) {
+  apply(X, MARGIN, function(X) do.call(FUN, as.list(X)))
+}

@@ -17,7 +17,7 @@ setup_cluster <- function(n_cores = 1){
     context::context_log_start()
     root <- "contexts"
     packages <- list(attached = c("reassortment", "ggplot2", "magrittr", "parallel"),
-                     loaded = "reshape2")
+                     loaded = "dplyr", "tidyr")
     ctx <- context::context_save(packages=packages,path=root, sources=sources,package_sources=src)
     config <- didehpc::didehpc_config(cores = n_cores)
     ## Submit setup to cluster
