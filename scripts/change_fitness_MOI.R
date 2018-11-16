@@ -60,6 +60,6 @@ if(FALSE) {
   mutation_pars$reassort <- FALSE
   mutation_pars$pop_size <- 1e6
   mutation_pars$hash <- get_hash()
-  obj <- setup_cluster(n_cores = 1)
+  obj <- setup_cluster(n_cores = 5)
   job <- obj$enqueue_bulk(mutation_pars, change_fitness_MOI_mutation_prob)
 }
