@@ -13,7 +13,7 @@
 #' for pb1 and pa.
 #' @return matrix of dim c(generations, n_strains).  Proportion of virions of
 #' each strain for each generation.
-#' @importFrom magrittr %>%
+#' @importFrom dplyr %>%
 #' @export
 run_mutation_model_no_coinfection <- function(iv, fitness, burst_size, pop_size,
                                               generations, mutation_prob) {
@@ -78,7 +78,7 @@ run_mutation_model_no_coinfection <- function(iv, fitness, burst_size, pop_size,
 #'  pre-packaged viruses
 #' @return matrix of dim c(generations, n_strains).  Proportion of virions of
 #' each strain for each generation.
-#' @importFrom magrittr %>%
+#' @importFrom dplyr %>%
 #' @export
 simulate_evolution <- function(iv, fitness, burst_size, n_cells, 
                                pop_size, generations, mutation_prob,
