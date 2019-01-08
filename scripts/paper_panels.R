@@ -1,7 +1,9 @@
-change_fitness_MOI_mutation_prob <- function(fitness_WM, MOI, mutation_prob, reassort, pop_size = 1e6, idx, hash) {
+library(magrittr)
+paper_panels <- function(MOI, fitness_MW = 0, mutation_prob, reassort, pop_size = 1e6, hash) {
   set.seed(2)
   iv <- c(95,0,0,5) #mt,mt  mt,wt  wt,mt   wt,wt
-  fitness <- c(1, 0, fitness_WM, 1)
+  fitness_WM <- 1.25
+  fitness <- c(1, fitness_MW, fitness_WM, 1)
   n_cells <- round(pop_size / MOI)
   burst_size <- 10
   generations <- 20
@@ -13,7 +15,8 @@ change_fitness_MOI_mutation_prob <- function(fitness_WM, MOI, mutation_prob, rea
   run_parallel <- TRUE
   reassort <- as.logical(reassort)
       
-  sim_name <- paste(num2str(c(fitness_WM, MOI, mutation_prob)), collapse = "_")
+  sim_name <- paste(num2str(c(MOI, fitness_MW, mutation_prob)), collapse = "_") %>%
+    paste0("_", reassort)
       dir_name <- ifelse(missing(hash),
                          make_results_folder(sim_name),
                          make_results_folder(sim_name, hash = hash))
@@ -43,23 +46,24 @@ change_fitness_MOI_mutation_prob <- function(fitness_WM, MOI, mutation_prob, rea
 }
 
 if(FALSE) {
-  fitness_WM <- c(1.1, 2, 5, 10)
-  MOI <- c(0.1, 1, 5)
-  mutation_prob <- 10^seq(-5, -3)
-  reassort_pars <- expand.grid(fitness_WM = fitness_WM, MOI = MOI)
-  reassort_pars$mutation_prob <- 0
-  reassort_pars$reassort <- TRUE
-  reassort_pars$pop_size <- 1e6
-  # apply_named_args(reassort_pars, 1, change_fitness_MOI_mutation_prob)
-  # reassort_pars$hash <- get_hash()
-  # change_fitness_MOI_mutation_prob(fitness_WM, MOI[1], 0, TRUE, 1e3)
-  # obj <- setup_cluster(n_cores = 1)
-  # job <- obj$enqueue_bulk(reassort_pars, change_fitness_MOI_mutation_prob)
+  mutation_prob <- 2e-4
+  pars_reassort_only <- data.frame(MOI = c(1, 1, 1e-3, 1e-2, 10),
+                     fitness_MW = c(0, 1, 0, 0, 0))
+  pars_reassort_only$reassort <- TRUE
+  pars_reassort_only$mutation_prob <- 0
+
+  pars_reassort_mutate <- pars_reassort_only
+  pars_reassort_mutate$mutation_prob <- mutation_prob
   
-  mutation_pars <- expand.grid(fitness_WM = fitness_WM, MOI = MOI, mutation_prob = mutation_prob)
-  mutation_pars$reassort <- FALSE
-  mutation_pars$pop_size <- 1e6
-  mutation_pars$hash <- get_hash()
+  pars_mutate_only <- pars_reassort_mutate[1,]
+  pars_mutate_only$reassort <- FALSE
+  
+  pars <- rbind(pars_reassort_only,
+                pars_reassort_mutate,
+                pars_mutate_only)
+  
+  pars$pop_size <- 1e3
+  pars$hash <- get_hash()
   obj <- setup_cluster(n_cores = 5)
-  job <- obj$enqueue_bulk(mutation_pars, change_fitness_MOI_mutation_prob)
+  job <- obj$enqueue_bulk(pars, paper_panels)
 }
