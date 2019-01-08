@@ -57,9 +57,9 @@ paper_panels_constant_n_cells <- function(MOI, mutation_prob, n_cells = 1e6, has
   one_strain_produced <- FALSE
   n_replicates <- 10
   run_parallel <- TRUE
-  reassort <- as.logical(reassort)
+  reassort <- TRUE
   
-  sim_name <- paste(num2str(MOI), reassort, "constant_cells", collapse = "_")
+  sim_name <- paste(num2str(MOI), mutation_prob, "constant_cells", sep = "_")
   dir_name <- ifelse(missing(hash),
                      make_results_folder(sim_name),
                      make_results_folder(sim_name, hash = hash))
@@ -80,11 +80,13 @@ paper_panels_constant_n_cells <- function(MOI, mutation_prob, n_cells = 1e6, has
   results <- parLapply_wrapper(run_parallel, seq_len(n_replicates), sim_func) %>%
     do.call(rbind, .)
   
-  # results <- readRDS(paste0(dir_name, "results.rds"))
+  saveRDS(results, paste0(dir_name, "results.rds"))
   g <- plot_multirun_strains(results)
   ggsave(paste0(dir_name, "strains.pdf"), g, width = 10, height = 10, units = "cm")
+  saveRDS(g, "strains.rds")
   g <- plot_multirun_segments(results)
   ggsave(paste0(dir_name, "segments.pdf"), g, width = 10, height = 10, units = "cm")
+  saveRDS(g, "segments.rds")
   invisible(results)
 }
 
