@@ -14,7 +14,7 @@ paper_panels <- function(MOI, fitness_MW = 0, fitness_WM = 1.25, mutation_prob, 
   run_parallel <- TRUE
   reassort <- as.logical(reassort)
       
-  sim_name <- paste(num2str(c(MOI, fitness_MW, mutation_prob)), collapse = "_") %>%
+  sim_name <- paste(num2str(c(MOI, fitness_MW, fitness_WM, mutation_prob)), collapse = "_") %>%
     paste0("_", reassort)
       dir_name <- ifelse(missing(hash),
                          make_results_folder(sim_name),
@@ -36,11 +36,13 @@ paper_panels <- function(MOI, fitness_MW = 0, fitness_WM = 1.25, mutation_prob, 
       results <- parLapply_wrapper(run_parallel, seq_len(n_replicates), sim_func) %>%
         do.call(rbind, .)
 
-      # results <- readRDS(paste0(dir_name, "results.rds"))
+      saveRDS(results, paste0(dir_name, "results.rds"))
       g <- plot_multirun_strains(results)
       ggsave(paste0(dir_name, "strains.pdf"), g, width = 10, height = 10, units = "cm")
+      saveRDS(g, "strains.rds")
       g <- plot_multirun_segments(results)
       ggsave(paste0(dir_name, "segments.pdf"), g, width = 10, height = 10, units = "cm")
+      saveRDS(g, "segments.rds")
       invisible(results)
 }
 
@@ -90,6 +92,28 @@ paper_panels_constant_n_cells <- function(MOI, mutation_prob, n_cells = 1e6, has
   invisible(results)
 }
 
+get_results <- function(MOI, fitness_MW = 0, fitness_WM = 1.25, mutation_prob, reassort, pop_size = 1e6, hash, job_idx) {
+  
+  sim_name <- paste(num2str(as.numeric(c(MOI, fitness_MW, fitness_WM, mutation_prob))), collapse = "_") %>%
+    paste0("_", trimws(reassort))
+  dir_name <- ifelse(missing(hash),
+                     make_results_folder(sim_name),
+                     make_results_folder(sim_name, hash = hash))
+  
+  job <- obj$task_get(jobs$ids[as.numeric(job_idx)])
+  if(job$status() == "COMPLETE") {
+    results <- job$result()
+    saveRDS(results, paste0(dir_name, "results.rds"))
+    g <- plot_multirun_strains(results)
+    ggsave(paste0(dir_name, "strains.pdf"), g, width = 10, height = 10, units = "cm")
+    saveRDS(g, "strains.rds")
+    g <- plot_multirun_segments(results)
+    ggsave(paste0(dir_name, "segments.pdf"), g, width = 10, height = 10, units = "cm")
+    saveRDS(g, "segments.rds")
+  }
+  invisible(NULL)
+}
+
 if(FALSE) {
   mutation_prob <- 2e-4
   fitness_WM <- 1.25
@@ -114,11 +138,34 @@ if(FALSE) {
 
   obj <- setup_cluster(n_cores = 5)
   job <- obj$enqueue_bulk(pars, paper_panels)
+  # contributable_paintedladybutterfly
   
   diff_MOI_idx <- seq(4, 6)
   pars <- rbind(pars_reassort_only[diff_MOI_idx,],
                 pars_reassort_mutate[diff_MOI_idx,])
   pars$n_cells <- 1e6
   pars$hash <- get_hash()
+  pars <- pars[,c("MOI", "mutation_prob", "n_cells", "hash")]
+  job <- obj$enqueue_bulk(pars, paper_panels_constant_n_cells)
+  # argumentative_grebe
+  
+  pars_reassort_only <- data.frame(MOI = 1e-1,
+                                   fitness_MW = 0,
+                                   fitness_WM = fitness_WM,
+                                   reassort = TRUE,
+                                   mutation_prob = 0)
+  
+  pars_reassort_mutate <- pars_reassort_only
+  pars_reassort_mutate$mutation_prob <- mutation_prob
+  pars <- rbind(pars_reassort_only,
+                pars_reassort_mutate)
+  
+  pars$pop_size <- 1e6
+  pars$hash <- get_hash()
+  
+  obj <- setup_cluster(n_cores = 5)
+  job <- obj$enqueue_bulk(pars, paper_panels)
+  
+  colnames(pars)[6] <- "n_cells"
   job <- obj$enqueue_bulk(pars, paper_panels_constant_n_cells)
 }
