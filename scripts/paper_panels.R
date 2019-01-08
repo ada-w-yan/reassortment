@@ -1,8 +1,7 @@
 library(magrittr)
-paper_panels <- function(MOI, fitness_MW = 0, mutation_prob, reassort, pop_size = 1e6, hash) {
+paper_panels <- function(MOI, fitness_MW = 0, fitness_WM = 1.25, mutation_prob, reassort, pop_size = 1e6, hash) {
   set.seed(2)
   iv <- c(95,0,0,5) #mt,mt  mt,wt  wt,mt   wt,wt
-  fitness_WM <- 1.25
   fitness <- c(1, fitness_MW, fitness_WM, 1)
   n_cells <- round(pop_size / MOI)
   burst_size <- 10
@@ -47,8 +46,10 @@ paper_panels <- function(MOI, fitness_MW = 0, mutation_prob, reassort, pop_size 
 
 if(FALSE) {
   mutation_prob <- 2e-4
-  pars_reassort_only <- data.frame(MOI = c(1, 1, 1e-3, 1e-2, 10),
-                     fitness_MW = c(0, 1, 0, 0, 0))
+  fitness_WM <- 1.25
+  pars_reassort_only <- data.frame(MOI = c(1, 1, 1, 1e-3, 1e-2, 10),
+                     fitness_MW = c(0, 1, 0, 0, 0, 0),
+                     fitness_WM = fitness_WM - c(0, 0, fitness_WM - 1, 0, 0, 0))
   pars_reassort_only$reassort <- TRUE
   pars_reassort_only$mutation_prob <- 0
 
@@ -64,6 +65,7 @@ if(FALSE) {
   
   pars$pop_size <- 1e3
   pars$hash <- get_hash()
+
   obj <- setup_cluster(n_cores = 5)
   job <- obj$enqueue_bulk(pars, paper_panels)
 }
