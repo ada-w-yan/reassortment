@@ -95,7 +95,7 @@ get_hash <- function(repo_dir) {
 #' @export
 make_results_folder <- function(folder_name, base_dir, hash) {
   if(missing(base_dir)) {
-    base_dir <- paste0(file.path(getwd(), "results"), "/")
+    base_dir <- paste0(file.path(getwd(), "results_100"), "/")
   }
   
   # make folder (warn if exists)

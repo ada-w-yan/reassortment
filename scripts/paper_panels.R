@@ -11,11 +11,58 @@ paper_panels <- function(MOI, fitness_MW = 0, fitness_WM = 1.25, mutation_prob, 
   MOI_dependent_burst_size <- TRUE
   choose_strain_by_fitness <- FALSE
   one_strain_produced <- FALSE
-  n_replicates <- 10
+  n_replicates <- 100
   run_parallel <- TRUE
   reassort <- as.logical(reassort)
       
   sim_name <- paste(num2str(c(MOI, fitness_MW, fitness_WM, mutation_prob)), collapse = "_") %>%
+    paste0("_", reassort)
+      dir_name <- ifelse(missing(hash),
+                         make_results_folder(sim_name),
+                         make_results_folder(sim_name, hash = hash))
+      inputs <- ls()
+      inputs <- list_vars_from_environment(inputs)
+      saveRDS(inputs, paste0(dir_name, "inputs.rds"))
+
+      sim_func <- function(run_no)  {
+       simulate_evolution(iv, fitness, burst_size, n_cells, pop_size,
+                                                generations, mutation_prob,
+                                                coinfection,
+                                                MOI_dependent_burst_size,
+                                                choose_strain_by_fitness,
+                                                one_strain_produced,
+                                                reassort) %>%
+          cbind(., matrix(run_no, nrow = generations, ncol = 1, dimnames = list(NULL, "run")))
+      }
+      results <- parLapply_wrapper(run_parallel, seq_len(n_replicates), sim_func) %>%
+        do.call(rbind, .)
+
+      saveRDS(results, paste0(dir_name, "results.rds"))
+      g <- plot_multirun_strains(results)
+      ggsave(paste0(dir_name, "strains.pdf"), g, width = 10, height = 10, units = "cm")
+      saveRDS(g, "strains.rds")
+      g <- plot_multirun_segments(results)
+      ggsave(paste0(dir_name, "segments.pdf"), g, width = 10, height = 10, units = "cm")
+      saveRDS(g, "segments.rds")
+      invisible(results)
+}
+
+paper_panels_separate_seed <- function(MOI, fitness_MW = 0, fitness_WM = 1.25, mutation_prob, reassort, pop_size = 1e6, hash, seed) {
+  set.seed(seed)
+  iv <- c(95,0,0,5) #mt,mt  mt,wt  wt,mt   wt,wt
+  fitness <- c(1, fitness_MW, fitness_WM, 1)
+  n_cells <- round(pop_size / MOI)
+  burst_size <- 10
+  generations <- 20
+  coinfection <- TRUE
+  MOI_dependent_burst_size <- TRUE
+  choose_strain_by_fitness <- FALSE
+  one_strain_produced <- FALSE
+  n_replicates <- 12
+  run_parallel <- TRUE
+  reassort <- as.logical(reassort)
+      
+  sim_name <- paste(num2str(c(MOI, fitness_MW, fitness_WM, mutation_prob, seed)), collapse = "_") %>%
     paste0("_", reassort)
       dir_name <- ifelse(missing(hash),
                          make_results_folder(sim_name),
@@ -121,6 +168,7 @@ plot_end_change_MOI <- function() {
   fitness_WM <- 1.25
   mutation_prob <- 2e-4
   reassort <- TRUE
+  # using results where the number of virions rather than the number of cells is held constant
   extract_prop_MM_by_MOI <- function(MOI) {
     filename <- paste(num2str(c(MOI, fitness_MW, fitness_WM, mutation_prob)), collapse = "_") %>%
     paste0("_", reassort, "/results.rds") %>%
