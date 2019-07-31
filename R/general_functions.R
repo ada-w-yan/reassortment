@@ -91,7 +91,6 @@ get_hash <- function(repo_dir) {
 #' @param base_dir directory in which to make folder
 #' @param hash string -- make file with this name in folder
 #' @return name of created directory
-#' @importFrom magrittr %>% %T>%
 #' @export
 make_results_folder <- function(folder_name, base_dir, hash) {
   if(missing(base_dir)) {
@@ -99,8 +98,8 @@ make_results_folder <- function(folder_name, base_dir, hash) {
   }
   
   # make folder (warn if exists)
-  dir_name <- paste0(base_dir, folder_name, "/") %T>%
-    dir.create(., recursive = TRUE)
+  dir_name <- paste0(base_dir, folder_name, "/")
+  dir.create(dir_name, recursive = TRUE)
   # make file named after current has of repo to which base_dir belongs
   if(!missing(hash)) {
     system(paste0("touch ", dir_name, hash))

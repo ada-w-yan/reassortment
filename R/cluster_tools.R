@@ -7,18 +7,17 @@
 setup_cluster <- function(n_cores = 1){
     user_options <- get_user_options()
     setwd(user_options$wd)
-    sources <- list.files(path = "scripts", 
-                            pattern = "\\.R", 
-                            recursive = FALSE,
-                            full.names = TRUE)
+    # sources <- list.files(path = "scripts", 
+    #                         pattern = "\\.R", 
+    #                         recursive = FALSE,
+    #                         full.names = TRUE)
+    sources <- c("scripts/paper_panels.R", "R/general_functions.R", "R/reassortment_model.R")
     do.call(options, user_options$cluster_options)
     src <- provisionr::package_sources(local = user_options$package_dir, expire = 1e-10)
     ## Setup contexts
     context::context_log_start()
     root <- "contexts"
-    packages <- list(attached = c("reassortment", "ggplot2", "magrittr", "parallel"),
-                     loaded = c("dplyr", "tidyr"))
-    ctx <- context::context_save(packages=packages,path=root, sources=sources,package_sources=src)
+    ctx <- context::context_save(path=root, sources=sources)
     config <- didehpc::didehpc_config(cores = n_cores)
     ## Submit setup to cluster
     obj1 <- didehpc::queue_didehpc(ctx, config)

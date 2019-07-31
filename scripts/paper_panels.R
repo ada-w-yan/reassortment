@@ -1,6 +1,4 @@
-library(magrittr)
-library(ggplot2)
-paper_panels <- function(MOI, fitness_MW = 0, fitness_WM = 1.25, mutation_prob, reassort, pop_size = 1e6, hash) {
+paper_panels <- function(MOI, fitness_MW = 0, fitness_WM = 1.25, mutation_prob, reassort, pop_size = 1e6, hash, plot_results = FALSE) {
   set.seed(2)
   iv <- c(95,0,0,5) #mt,mt  mt,wt  wt,mt   wt,wt
   fitness <- c(1, fitness_MW, fitness_WM, 1)
@@ -15,8 +13,8 @@ paper_panels <- function(MOI, fitness_MW = 0, fitness_WM = 1.25, mutation_prob, 
   run_parallel <- TRUE
   reassort <- as.logical(reassort)
       
-  sim_name <- paste(num2str(c(MOI, fitness_MW, fitness_WM, mutation_prob)), collapse = "_") %>%
-    paste0("_", reassort)
+  sim_name <- paste(num2str(c(MOI, fitness_MW, fitness_WM, mutation_prob)), collapse = "_")
+    sim_name <-  paste0(sim_name, "_", reassort)
       dir_name <- ifelse(missing(hash),
                          make_results_folder(sim_name),
                          make_results_folder(sim_name, hash = hash))
@@ -25,29 +23,32 @@ paper_panels <- function(MOI, fitness_MW = 0, fitness_WM = 1.25, mutation_prob, 
       saveRDS(inputs, paste0(dir_name, "inputs.rds"))
 
       sim_func <- function(run_no)  {
-       simulate_evolution(iv, fitness, burst_size, n_cells, pop_size,
+       result <- simulate_evolution(iv, fitness, burst_size, n_cells, pop_size,
                                                 generations, mutation_prob,
                                                 coinfection,
                                                 MOI_dependent_burst_size,
                                                 choose_strain_by_fitness,
                                                 one_strain_produced,
-                                                reassort) %>%
-          cbind(., matrix(run_no, nrow = generations, ncol = 1, dimnames = list(NULL, "run")))
+                                                reassort)
+         result <-   cbind(result, matrix(run_no, nrow = generations, ncol = 1, dimnames = list(NULL, "run")))
+         result
       }
-      results <- parLapply_wrapper(run_parallel, seq_len(n_replicates), sim_func) %>%
-        do.call(rbind, .)
+      results <- parLapply_wrapper(run_parallel, seq_len(n_replicates), sim_func)
+        results <-   do.call(rbind, results)
 
       saveRDS(results, paste0(dir_name, "results.rds"))
-      g <- plot_multirun_strains(results)
-      ggsave(paste0(dir_name, "strains.pdf"), g, width = 10, height = 10, units = "cm")
-      saveRDS(g, "strains.rds")
-      g <- plot_multirun_segments(results)
-      ggsave(paste0(dir_name, "segments.pdf"), g, width = 10, height = 10, units = "cm")
-      saveRDS(g, "segments.rds")
+      if(plot_results) {
+        g <- plot_multirun_strains(results)
+        ggsave(paste0(dir_name, "strains.pdf"), g, width = 10, height = 10, units = "cm")
+        saveRDS(g, "strains.rds")
+        g <- plot_multirun_segments(results)
+        ggsave(paste0(dir_name, "segments.pdf"), g, width = 10, height = 10, units = "cm")
+        saveRDS(g, "segments.rds")
+      }
       invisible(results)
 }
-
-paper_panels_separate_seed <- function(MOI, fitness_MW = 0, fitness_WM = 1.25, mutation_prob, reassort, pop_size = 1e6, hash, seed) {
+if(FALSE) {
+paper_panels_separate_seed <- function(MOI, fitness_MW = 0, fitness_WM = 1.25, mutation_prob, reassort, pop_size = 1e6, hash, seed, plot_results = TRUE) {
   set.seed(seed)
   iv <- c(95,0,0,5) #mt,mt  mt,wt  wt,mt   wt,wt
   fitness <- c(1, fitness_MW, fitness_WM, 1)
@@ -64,6 +65,7 @@ paper_panels_separate_seed <- function(MOI, fitness_MW = 0, fitness_WM = 1.25, m
       
   sim_name <- paste(num2str(c(MOI, fitness_MW, fitness_WM, mutation_prob, seed)), collapse = "_") %>%
     paste0("_", reassort)
+
       dir_name <- ifelse(missing(hash),
                          make_results_folder(sim_name),
                          make_results_folder(sim_name, hash = hash))
@@ -203,6 +205,12 @@ plot_end_change_MOI <- function() {
   invisible(prop_MM_by_MOI)
 }
 
+}
+if(FALSE) {
+  for (i in 4:10) {
+    a <- paper_panels_separate_seed(MOI = 1, fitness_MW = 0, fitness_WM = 1.25, mutation_prob = 2e-4, reassort = TRUE, pop_size = 1e6, hash = "57f2fe3", seed = i)
+  }
+}
 if(FALSE) {
   mutation_prob <- 2e-4
   fitness_WM <- 1.25

@@ -13,7 +13,6 @@
 #' for pb1 and pa.
 #' @return matrix of dim c(generations, n_strains).  Proportion of virions of
 #' each strain for each generation.
-#' @importFrom dplyr %>%
 #' @export
 run_mutation_model_no_coinfection <- function(iv, fitness, burst_size, pop_size,
                                               generations, mutation_prob) {
@@ -31,14 +30,14 @@ run_mutation_model_no_coinfection <- function(iv, fitness, burst_size, pop_size,
   mutation_matrix <- make_mutation_matrix(mutation_prob)
   
   for(generation in 2:generations)  {
-    burst_size <- probabilistic_round(burst_size_by_strain_per_virus * popn_by_strain) %>%
-      matrix(ncol = 1)
+    burst_size <- probabilistic_round(burst_size_by_strain_per_virus * popn_by_strain)
+    burst_size <- matrix(burst_size, ncol = 1)
     # deterministic mutation
-    burst_size <- (mutation_matrix %*% burst_size) %>%
-      as.numeric
+    burst_size <- (mutation_matrix %*% burst_size)
+    burst_size <- as.numeric(burst_size)
     # to do: should be selecting from, rather than sampling with probability...
-    popn_by_strain <- rmultinom(1, pop_size, normalise(burst_size)) %>%
-      as.numeric
+    popn_by_strain <- rmultinom(1, pop_size, normalise(burst_size))
+    popn_by_strain <- as.numeric(popn_by_strain)
     results[generation,] <- popn_by_strain
   }
   
@@ -78,7 +77,7 @@ run_mutation_model_no_coinfection <- function(iv, fitness, burst_size, pop_size,
 #'  pre-packaged viruses
 #' @return matrix of dim c(generations, n_strains).  Proportion of virions of
 #' each strain for each generation.
-#' @importFrom dplyr %>%
+
 #' @export
 simulate_evolution <- function(iv, fitness, burst_size, n_cells, 
                                pop_size, generations, mutation_prob,
@@ -102,9 +101,9 @@ simulate_evolution <- function(iv, fitness, burst_size, n_cells,
   
   # assign strains to initial virus population and
   # decide which virion is in which cell (assume Poisson distribution)
-  virus_popn <- round_preserve_sum(normalise(iv) * pop_size) %>%
-      enumerate_popn %>%
-    assign_cells
+  virus_popn <- round_preserve_sum(normalise(iv) * pop_size)
+  virus_popn <- enumerate_popn(virus_popn)
+  virus_popn <- assign_cells(virus_popn)
   
   colnames(virus_popn) <- c("strain", "cell_no")
   
@@ -178,7 +177,7 @@ simulate_evolution <- function(iv, fitness, burst_size, n_cells,
       
       # mutate the newly produced strain population
       if(mutation_prob > 0) {
-          new_popn <- mutate_popn(new_popn)   
+        new_popn <- mutate_popn(new_popn)   
       }
       new_popn
     }
@@ -230,7 +229,7 @@ make_mutation_matrix <- function(mutation_prob) {
 #' @return function that takes the argument virus_popn: numeric vector of 
 #' length 4, with the number of virions in each of the 4 strains, and outputs
 #' the same vector but with mutated virions
-#' @importFrom magrittr %>%
+
 mutate_popn_wrapper <- function(mutation_prob) {
   mutation_matrix <<- make_mutation_matrix(mutation_prob)
   function(virus_popn) {
@@ -244,15 +243,14 @@ mutate_popn_wrapper <- function(mutation_prob) {
 #' in each of the 4 strains
 #' @return numeric vector of length 4, with the number of virions
 #' in each of the 4 strains, after reassortment
-#' @importFrom magrittr %>%
+
 reassort_popn <- function(virus_popn) {
   strain_segments <- matrix(c(1, 1, 1, 0, 0, 1, 0, 0), ncol = 2, byrow = TRUE)
-  popn_segments <- enumerate_popn(virus_popn) %>%
-    vapply(., function(x) strain_segments[x,], numeric(2)) %>%
-    t
+  popn_segments <- enumerate_popn(virus_popn)
+  popn_segments <- t(vapply(popn_segments, function(x) strain_segments[x,], numeric(2)))
   popn_segments[,2] <- sample(popn_segments[,2])
-  new_popn <- apply(popn_segments, 1, segments_to_strain) %>%
-    sum_strains
+  new_popn <- apply(popn_segments, 1, segments_to_strain)
+  new_popn <- sum_strains(new_popn)
   new_popn
 }
 
@@ -288,8 +286,8 @@ segments_to_strain <- function(idx) {
 #' @return numeric vector of length 4, with the number of virions
 #' in each of the 4 strains
 sum_strains <- function(strains) {
-    n_strains <- 4
-    vnapply(seq_len(n_strains), function(x) sum(strains == x))
+  n_strains <- 4
+  vnapply(seq_len(n_strains), function(x) sum(strains == x))
 }
 
 #' returns the number of newly produced virions after reassortment and before mutation
