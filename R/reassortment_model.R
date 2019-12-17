@@ -1,3 +1,73 @@
+#' Simulate evolution of mixture by reassortment and/or mutation, for many replicates
+#' @param MOI multiplicity of infection = number of virions/number of cells
+#' @param iv numeric vector of length n_strains = 4.  
+#' Initial proportions of [mt, mt], [mt, wt], [wt, mt], [wt, wt].
+#' @param fitness_MW fitness of the PB1 mutant
+#' @param fitness_WM fitness of the PA mutant
+#' @param fitness_MM fitness of the double mutant
+#' @param mutation_prob probability of mutation for each new virion.  Assume same
+#' for pb1 and pa.
+#' @param reassort logical. If TRUE, random reassortment of segments occurs
+#'  before packaging.  If FALSE, each strain in the cell effectively produces
+#'  pre-packaged viruses
+#' @param pop_size numeric vector of length 1. Number of virions.
+#' @param burst_size numeric vector of length 1.
+#' Burst size from a cell infected with one virion with fitness 1.
+#' @param sim_name character vector for naming of output file
+#' @param hash character vector: git hash for tagging run
+#' @return matrix of dim c(generations * n_replicates, n_strains + 1).  
+#' Concatenated simulation results for n_replicates simulations with the
+#' above model parameters.
+#' @export
+run_default_pars <- function(MOI = 1,
+                             iv = c(95,0,0,5),
+                             fitness_MW = 0,
+                             fitness_WM = 1.25,
+                             fitness_MM = 1,
+                             mutation_prob = 2e-4,
+                             reassort = TRUE, 
+                             pop_size = 1e6, 
+                             burst_size = 10,
+                             sim_name,
+                             hash) {
+  set.seed(2)
+  fitness <- c(1, fitness_MW, fitness_WM, fitness_MM)
+  n_cells <- round(pop_size / MOI)
+  generations <- 2
+  coinfection <- TRUE
+  MOI_dependent_burst_size <- TRUE
+  choose_strain_by_fitness <- FALSE
+  one_strain_produced <- FALSE
+  n_replicates <- 1
+  run_parallel <- FALSE
+  reassort <- as.logical(reassort)
+  
+  dir_name <- ifelse(missing(hash),
+                     make_results_folder(sim_name),
+                     make_results_folder(sim_name, hash = hash))
+  
+  inputs <- ls()
+  inputs <- list_vars_from_environment(inputs)
+  saveRDS(inputs, paste0(dir_name, "inputs.rds"))
+  
+  sim_func <- function(run_no)  {
+    result <- simulate_evolution(iv, fitness, burst_size, n_cells, pop_size,
+                                 generations, mutation_prob,
+                                 coinfection,
+                                 MOI_dependent_burst_size,
+                                 choose_strain_by_fitness,
+                                 one_strain_produced,
+                                 reassort)
+    result <-   cbind(result, matrix(run_no, nrow = generations, ncol = 1, dimnames = list(NULL, "run")))
+    result
+  }
+  results <- parLapply_wrapper(run_parallel, seq_len(n_replicates), sim_func)
+  results <-   do.call(rbind, results)
+  
+  saveRDS(results, paste0(dir_name, "results.rds"))
+  invisible(results)
+}
+
 #' Simulate evolution of mixture by mutation, with no co-infection
 #' 
 #' @param iv numeric vector of length n_strains = 4.  
@@ -106,7 +176,7 @@ simulate_evolution <- function(iv, fitness, burst_size, n_cells,
   virus_popn <- assign_cells(virus_popn)
   
   colnames(virus_popn) <- c("strain", "cell_no")
-  
+
   # initialise results matrix
   results <- matrix(0, nrow = generations, ncol = n_strains)
   results[1,] <- sum_strains(virus_popn[,"strain"])
@@ -114,8 +184,9 @@ simulate_evolution <- function(iv, fitness, burst_size, n_cells,
   mutate_popn <- mutate_popn_wrapper(mutation_prob)
   
   # run simulation
+  # output_timing <- "timing.txt"
+  # old_time <- Sys.time()
   for(generation in 2:generations)  {
-    
     # determine the number of virions produced by a given cell, and what strains they belong to
     make_new_popn <- function(virus_popn) {
       # determine the number of virions of each strain that infected the cell
@@ -129,7 +200,7 @@ simulate_evolution <- function(iv, fitness, burst_size, n_cells,
       if(!MOI_dependent_burst_size) {
         burst_size_from_cell <- burst_size_from_cell / sum(strains_in_cell)
       }
-      burst_size_from_cell <- probabilistic_round(burst_size_from_cell)  
+      burst_size_from_cell <- rpois(1, burst_size_from_cell)  
       # return early if no virions are produced
       if(burst_size_from_cell == 0) {
         return(numeric(n_strains))
@@ -174,18 +245,19 @@ simulate_evolution <- function(iv, fitness, burst_size, n_cells,
           new_popn <- as.numeric(rmultinom(1, burst_size_from_cell, prob_strain))
         }
       }
-      
-      # mutate the newly produced strain population
-      if(mutation_prob > 0) {
-        new_popn <- mutate_popn(new_popn)   
-      }
       new_popn
     }
     
     # apply the above function to all infected cells and combine the results
     virus_popn <- tapply(virus_popn[,"strain"], virus_popn[,"cell_no"], make_new_popn)
-    virus_popn <- do.call(rbind, virus_popn)
-    virus_popn <- enumerate_popn(colSums(virus_popn))
+    virus_popn <- do.call(rbind, virus_popn) %>%
+      colSums
+
+    # mutate the newly produced strain population
+    if(mutation_prob > 0) {
+      virus_popn <- mutate_popn(virus_popn)   
+    }
+    virus_popn <- enumerate_popn(virus_popn)
     
     # cap virus population (assume the effective reproduction number is 1
     # and thus the virus population is constant)
@@ -199,6 +271,12 @@ simulate_evolution <- function(iv, fitness, burst_size, n_cells,
     virus_popn <- assign_cells(virus_popn) 
     colnames(virus_popn) <- c("strain", "cell_no")
     results[generation,] <- sum_strains(virus_popn[,"strain"])
+    # )
+    # new_time <- Sys.time()
+    # timing <- new_time - old_time
+    # print(timing)
+    # old_time <- new_time
+    # write(timing, output_timing, append = TRUE)
   }
   
   # return proportion of each strain at given generation number
@@ -231,9 +309,13 @@ make_mutation_matrix <- function(mutation_prob) {
 #' the same vector but with mutated virions
 
 mutate_popn_wrapper <- function(mutation_prob) {
-  mutation_matrix <<- make_mutation_matrix(mutation_prob)
+  mutation_matrix <- make_mutation_matrix(mutation_prob) %>%
+    as.data.frame
   function(virus_popn) {
-    round_preserve_sum(as.numeric(mutation_matrix %*% matrix(virus_popn, ncol = 1)))
+    Map(rmultinom, virus_popn, mutation_matrix, n = 1) %>%
+      do.call(cbind, .) %>%
+      rowSums
+    # round_preserve_sum(as.numeric(mutation_matrix %*% matrix(virus_popn, ncol = 1)))
   }
 }
 
@@ -299,8 +381,24 @@ sum_strains <- function(strains) {
 #' in each of the 4 strains
 make_and_package_segments <- function(prob_strain, burst_size) {
   strain_segments <- matrix(c(1, 1, 1, 0, 0, 1, 0, 0), ncol = 2, byrow = TRUE)
-  prob_mt_segment <- colSums(strain_segments * prob_strain)
-  segments <- vapply(prob_mt_segment, function(x) rbinom(burst_size, 1, x), numeric(burst_size))
+  prob_wt_segment <- colSums(strain_segments * prob_strain)
+  # segments <- vnapply(prob_wt_segment, function(x) rbinom(1, burst_size, x))
+  # strains <- numeric(length(prob_strain))
+  # # pair WT PA segments[1] up with PB1s -- sample from segments[2] WT PB1s out of burst_size PB1s
+  # strains[1] <- rhyper(1, segments[2], burst_size - segments[2], segments[1])
+  # # rest of WT PA segments must be paired with mutants
+  # strains[3] <- segments[1] - strains[1]
+  # remaining_WT_PB1 <- segments[2] - strains[1]
+  # remaining_MUT_PB1 <- burst_size - segments[1] - remaining_WT_PB1
+  # strains[2] <- rhyper(1, remaining_WT_PB1, remaining_MUT_PB1, burst_size - segments[1])
+  # strains[4] <- burst_size - sum(strains)
+  # stopifnot(all(strains >= 0))
+  
+  
+  segments <- vapply(prob_wt_segment, function(x) rbinom(burst_size, 1, x), numeric(burst_size))
+  if(!is.matrix(segments)) {
+    segments <- matrix(segments, nrow = 1)
+  }
   strains <- sum_strains(segments_to_strain(segments))
   strains
 }
