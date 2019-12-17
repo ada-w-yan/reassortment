@@ -18,6 +18,7 @@ paper_panels <- function(MOI, fitness_MW = 0, fitness_WM = 1.25, mutation_prob, 
       dir_name <- ifelse(missing(hash),
                          make_results_folder(sim_name),
                          make_results_folder(sim_name, hash = hash))
+
       inputs <- ls()
       inputs <- list_vars_from_environment(inputs)
       saveRDS(inputs, paste0(dir_name, "inputs.rds"))
@@ -174,7 +175,7 @@ plot_end_change_MOI <- function() {
   extract_prop_MM_by_MOI <- function(MOI) {
     filename <- paste(num2str(c(MOI, fitness_MW, fitness_WM, mutation_prob)), collapse = "_") %>%
     paste0("_", reassort, "/results.rds") %>%
-      paste0("results/", .)
+      paste0("results_100/", .)
     results <- readRDS(filename)
     n_runs <- max(results[,"run"])
     n_gen <- nrow(results) / n_runs
@@ -182,14 +183,14 @@ plot_end_change_MOI <- function() {
       quantile(prob = c(0.025, 0.975))
     results
   }
-  if(FALSE) {
+  if(TRUE) {
   prop_MM_by_MOI <- t(vapply(MOI, extract_prop_MM_by_MOI, double(2))) %>%
     as.data.frame
   prop_MM_by_MOI$MOI <- MOI
-  saveRDS(prop_MM_by_MOI, "results/prop_MM_by_MOI.rds")
+  saveRDS(prop_MM_by_MOI, "results_100/prop_MM_by_MOI.rds")
   }
   
-  prop_MM_by_MOI <- readRDS("results/prop_MM_by_MOI.rds")
+  prop_MM_by_MOI <- readRDS("results_100/prop_MM_by_MOI.rds")
   
   make_label <- function(x) TeX(paste0("$10^{", x, "}$"))
   x_labels <- sapply(log10(MOI), make_label)
@@ -200,7 +201,7 @@ plot_end_change_MOI <- function() {
     coord_cartesian(ylim = c(0, 1), expand = FALSE) +
     ylab("Proportion of MM") +
     theme(text = element_text(size = 20))
-  ggsave("results/prop_MM_by_MOI.pdf", g, width = 10, height = 10, units = "cm")
+  ggsave("results_100/prop_MM_by_MOI.pdf", g, width = 10, height = 10, units = "cm")
   saveRDS(g, "prop_MM_by_MOI_plot.rds")
   invisible(prop_MM_by_MOI)
 }
@@ -209,6 +210,18 @@ plot_end_change_MOI <- function() {
 if(FALSE) {
   for (i in 4:10) {
     a <- paper_panels_separate_seed(MOI = 1, fitness_MW = 0, fitness_WM = 1.25, mutation_prob = 2e-4, reassort = TRUE, pop_size = 1e6, hash = "57f2fe3", seed = i)
+  }
+  
+  combine_sims <- function(sim_name) {
+    dir_name <- "results_100/"
+    n_folders <- 10
+    n_sims_per_folder <- 10
+    filenames <- paste0(dir_name, sim_name, "_", seq_len(n_folders), "_TRUE/results.rds")
+    results <- lapply(filenames, readRDS)
+    results <- do.call(rbind, results)
+    results[,"run"] <- rep(seq_len(n_folders * n_sims_per_folder), each = 20)
+    saveRDS(results, paste0(dir_name, sim_name, "_TRUE/results.rds"))
+    invisible(results)
   }
 }
 if(FALSE) {
