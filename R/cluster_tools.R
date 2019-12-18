@@ -17,7 +17,7 @@ setup_cluster <- function(n_cores = 1){
     ## Setup contexts
     context::context_log_start()
     root <- "contexts"
-    ctx <- context::context_save(path=root, sources=sources)
+    ctx <- context::context_save(path=root, packages = "magrittr", sources=sources)
     config <- didehpc::didehpc_config(cores = n_cores)
     ## Submit setup to cluster
     obj1 <- didehpc::queue_didehpc(ctx, config)
