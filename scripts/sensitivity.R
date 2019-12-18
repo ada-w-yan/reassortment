@@ -29,7 +29,12 @@ sensitivity_fitness_WM <- function() {
 sensitivity_fitness_MW <- function() {
   hash <- get_hash()
   reassort <- c(FALSE, TRUE)
-  sim_name <- paste0("fitness_MW_1_", reassort)
+  par_grid <- expand.grid(fitness_MW = 1,
+                          reassort = reassort)
+  par_grid$sim_name <- paste0("fitness_MW_", 
+                              num2str(par_grid$fitness_MW_),
+                              "_",
+                              reassort)
   job <- obj$enqueue_bulk(par_grid, run_default_pars)
   job
 }
