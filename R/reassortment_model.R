@@ -18,6 +18,7 @@
 #' @return matrix of dim c(generations * n_replicates, n_strains + 1).  
 #' Concatenated simulation results for n_replicates simulations with the
 #' above model parameters.
+#' @importFrom magrittr %>%
 #' @export
 run_default_pars <- function(MOI = 1,
                              iv = c(95,0,0,5),
@@ -33,13 +34,13 @@ run_default_pars <- function(MOI = 1,
   set.seed(2)
   fitness <- c(1, fitness_MW, fitness_WM, fitness_MM)
   n_cells <- round(pop_size / MOI)
-  generations <- 2
+  generations <- 20
   coinfection <- TRUE
   MOI_dependent_burst_size <- TRUE
   choose_strain_by_fitness <- FALSE
   one_strain_produced <- FALSE
-  n_replicates <- 1
-  run_parallel <- FALSE
+  n_replicates <- 100
+  run_parallel <- TRUE
   reassort <- as.logical(reassort)
   
   dir_name <- ifelse(missing(hash),
@@ -147,7 +148,7 @@ run_mutation_model_no_coinfection <- function(iv, fitness, burst_size, pop_size,
 #'  pre-packaged viruses
 #' @return matrix of dim c(generations, n_strains).  Proportion of virions of
 #' each strain for each generation.
-
+#' @importFrom magrittr %>%
 #' @export
 simulate_evolution <- function(iv, fitness, burst_size, n_cells, 
                                pop_size, generations, mutation_prob,
@@ -307,7 +308,7 @@ make_mutation_matrix <- function(mutation_prob) {
 #' @return function that takes the argument virus_popn: numeric vector of 
 #' length 4, with the number of virions in each of the 4 strains, and outputs
 #' the same vector but with mutated virions
-
+#' @importFrom magrittr %>%
 mutate_popn_wrapper <- function(mutation_prob) {
   mutation_matrix <- make_mutation_matrix(mutation_prob) %>%
     as.data.frame

@@ -8,13 +8,7 @@ sensitivity_mutation_rate <- function() {
                               num2str(par_grid$mutation_prob),
                               "_",
                               reassort)
-  job <- Map(function(x, y, z) obj$enqueue(run_default_pars(reassort = x,
-                                                            sim_name = y,
-                                                            hash = hash,
-                                                            mutation_prob = z),
-                                           par_grid$reassort,
-                                           par_grid$sim_name,
-                                           par_grid$mutation_prob))
+  job <- obj$enqueue_bulk(par_grid, run_default_pars)
   job
 }
 
@@ -28,13 +22,7 @@ sensitivity_fitness_WM <- function() {
                               num2str(par_grid$fitness_WM),
                               "_",
                               reassort)
-  job <- Map(function(x, y, z) obj$enqueue(run_default_pars(reassort = x,
-                                                            sim_name = y,
-                                                            hash = hash,
-                                                            fitness_WM = z),
-                                           par_grid$reassort,
-                                           par_grid$sim_name,
-                                           par_grid$fitness_WM))
+  job <- obj$enqueue_bulk(par_grid, run_default_pars)
   job
 }
 
@@ -42,12 +30,7 @@ sensitivity_fitness_MW <- function() {
   hash <- get_hash()
   reassort <- c(FALSE, TRUE)
   sim_name <- paste0("fitness_MW_1_", reassort)
-  job <- Map(function(x, y) obj$enqueue(run_default_pars(reassort = x,
-                                                            sim_name = y,
-                                                            hash = hash,
-                                                            fitness_MW = 1)),
-                                           reassort,
-                                           sim_name)
+  job <- obj$enqueue_bulk(par_grid, run_default_pars)
   job
 }
 
@@ -61,12 +44,6 @@ sensitivity_fitness_MM <- function() {
                               num2str(par_grid$fitness_MM),
                               "_",
                               reassort)
-  job <- Map(function(x, y, z) obj$enqueue(run_default_pars(reassort = x,
-                                                            sim_name = y,
-                                                            hash = hash,
-                                                            fitness_MM = z),
-                                           par_grid$reassort,
-                                           par_grid$sim_name,
-                                           par_grid$fitness_MM))
+  job <- obj$enqueue_bulk(par_grid, run_default_pars)
   job
 }
