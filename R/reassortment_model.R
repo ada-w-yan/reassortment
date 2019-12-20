@@ -29,6 +29,8 @@ run_default_pars <- function(MOI = 1,
                              reassort = TRUE, 
                              pop_size = 1e6, 
                              burst_size = 10,
+                             MOI_dependent_burst_size = TRUE,
+                             choose_strain_by_fitness = FALSE,
                              sim_name,
                              hash) {
   set.seed(2)
@@ -36,8 +38,6 @@ run_default_pars <- function(MOI = 1,
   n_cells <- round(pop_size / MOI)
   generations <- 20
   coinfection <- TRUE
-  MOI_dependent_burst_size <- TRUE
-  choose_strain_by_fitness <- FALSE
   one_strain_produced <- FALSE
   n_replicates <- 100
   run_parallel <- TRUE
@@ -177,7 +177,7 @@ simulate_evolution <- function(iv, fitness, burst_size, n_cells,
   virus_popn <- assign_cells(virus_popn)
   
   colnames(virus_popn) <- c("strain", "cell_no")
-
+  
   # initialise results matrix
   results <- matrix(0, nrow = generations, ncol = n_strains)
   results[1,] <- sum_strains(virus_popn[,"strain"])
@@ -253,7 +253,7 @@ simulate_evolution <- function(iv, fitness, burst_size, n_cells,
     virus_popn <- tapply(virus_popn[,"strain"], virus_popn[,"cell_no"], make_new_popn)
     virus_popn <- do.call(rbind, virus_popn) %>%
       colSums
-
+    
     # mutate the newly produced strain population
     if(mutation_prob > 0) {
       virus_popn <- mutate_popn(virus_popn)   
