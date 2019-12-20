@@ -98,3 +98,13 @@ sensitivity_MOI_dependent_burst_size <- function() {
   job <- obj$enqueue_bulk(par_grid, run_default_pars)
   job
 }
+
+sensitivity_choose_strain_by_fitness <- function() {
+  hash <- get_hash()
+  par_grid <- expand.grid(choose_strain_by_fitness = TRUE,
+                          reassort = reassort)
+  par_grid$sim_name <- paste0("choose_strain_by_fitness_TRUE_", 
+                              par_grid$reassort)
+  job <- obj$enqueue_bulk(par_grid, run_default_pars)
+  job
+}
