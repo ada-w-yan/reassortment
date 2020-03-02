@@ -6,7 +6,9 @@
 \usage{
 run_default_pars(MOI = 1, iv = c(95, 0, 0, 5), fitness_MW = 0,
   fitness_WM = 1.25, fitness_MM = 1, mutation_prob = 2e-04,
-  reassort = TRUE, pop_size = 1e+06, burst_size = 10, sim_name, hash)
+  reassort = TRUE, pop_size = 1e+06, burst_size = 10,
+  MOI_dependent_burst_size = TRUE, choose_strain_by_fitness = FALSE,
+  sim_name, hash)
 }
 \arguments{
 \item{MOI}{multiplicity of infection = number of virions/number of cells}

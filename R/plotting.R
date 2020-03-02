@@ -28,7 +28,8 @@ plot_strains <- function(results, zoom = FALSE) {
 #' 
 #' @param results output of run_xxx_model  
 #' @import ggplot2
-#' @importFrom dplyr %>%
+#' @importFrom dplyr group_by summarise
+#' @importFrom tidyr pivot_longer
 #' @export
 plot_multirun_strains <- function(results) {
   colours <- c("purple", "red", "blue", "black")
@@ -38,23 +39,30 @@ plot_multirun_strains <- function(results) {
   n_gen <- nrow(results) / n_runs
   results$gen <- seq_len(n_gen)
   g <- results %>% 
-    tidyr::gather(key = "strain", value = "proportion", -gen, -run) %>%
-    dplyr::group_by(gen, strain) %>%
-    dplyr::summarise(quantile(proportion, 0.025), quantile(proportion, 0.975)) %>%
+    pivot_longer(c(-gen, -run), names_to = "strain", values_to = "proportion") %>%
+    group_by(gen, strain) %>%
+    summarise(quantile(proportion, 0.025), quantile(proportion, 0.975)) %>%
     ggplot(aes(x = gen, 
                ymin = `quantile(proportion, 0.025)`,
                ymax = `quantile(proportion, 0.975)`,
-               color = strain, 
+               color = strain,
+               fill = strain, 
                group = strain)) +
-    geom_errorbar() + 
+    geom_ribbon() + 
     theme_bw() +
-    coord_cartesian(ylim = c(0, 1), expand = FALSE) +
-    xlab("Generation") +
-    ylab("Proportion of strain") +
+    scale_x_continuous(breaks = c(1, 5, 10, 15, 20), limits = c(0, 20), expand = c(0,0)) +
+    scale_y_continuous(breaks = seq(0, 1, by = 0.2), limits = c(0, 1), expand = c(0,0)) +
+    xlab("Time (generations)") +
+    ylab("Proportion") +
+    scale_fill_manual("", values = colours) +
     scale_color_manual("", values = colours) +
-    theme(legend.justification=c(1,1),
-          legend.position=c(.9,.5),
-          text = element_text(size = 20))
+    theme(legend.position = "none",
+    # theme(legend.justification=c(1,1),
+    #       legend.position=c(.9,.5),
+          text = element_text(size = 16),
+    plot.margin = margin(.5, .5, .5, .5, "cm"))
+    
+  g
 }
 
 #' plot results of run_xxx_model by segment
