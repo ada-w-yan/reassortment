@@ -123,3 +123,53 @@ plot_multirun_segments <- function(results) {
           legend.position=c(.9,.5),
           text = element_text(size = 20))
 }
+
+#' plot proportion of each strain at 20 generations across sensitivity analyses
+#' 
+#' @param results_list list of results; each element is an output of run_xxx_model
+#' @param results_name vector of names of simulation to plot along x-axis
+#' @param reassortment_in vector of logicals: whether those results were from a simulation
+#' with or without reassortment
+#' @import ggplot2
+#' @importFrom dplyr %>%
+#' @export
+sensitivity_plot <- function(results_list, results_name, reassortment_in, x_lab, rotate_x_labels = FALSE) {
+  colours <- c("purple", "red", "blue", "black")
+  collate_results <- function(results, results_name, reassortment_in) {
+    n_runs <- results[nrow(results), "run"]
+    n_gen <- nrow(results) / n_runs
+    results <- as.data.frame(results)
+    results$gen <- seq_len(n_gen)
+    results %>% as_tibble %>%
+      filter(gen == n_gen) %>%
+      summarise_all(median) %>%
+      select(-run, -gen) %>%
+      mutate(reassortment = reassortment_in, sim_name = results_name)
+  }
+  results <- Map(collate_results, results_list, results_name, reassortment_in) %>%
+    do.call(rbind, .)
+  names(colours) <- colnames(results)[seq_along(colours)]
+  results <- results %>%
+    pivot_longer(-c("sim_name", "reassortment")) %>%
+    mutate(sim_name = factor(sim_name, levels = results_name[seq_along(unique(results_name))]),
+           reassortment = factor(reassortment))
+  levels(results$reassortment) <- c("Mutation only", "Reassortment and mutation")
+  g <- ggplot(results, aes(x = sim_name, y = value, fill = name)) +
+    facet_wrap(~reassortment, nrow = 1) +
+    geom_bar(position = "stack", stat = "identity") +
+    theme_bw() +
+    xlab(x_lab) +
+    ylab("Proportion") +
+    scale_fill_manual("", values = colours) +
+    scale_color_manual("", values = colours) +
+    theme(legend.position = "none",
+          # theme(legend.justification=c(1,1),
+          #       legend.position=c(.9,.5),
+          text = element_text(size = 16),
+          plot.margin = margin(.5, .5, .5, .5, "cm"))
+  if(rotate_x_labels) {
+    g <- g + theme(axis.text.x = element_text(angle = 90))
+  }
+  
+  list(g = g, results = results)
+}
