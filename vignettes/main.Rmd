@@ -1,0 +1,127 @@
+---
+title: "Favipiravir-resistant virus shows potential for transmission"
+author: "Ada Yan"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{main}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+## Introduction
+
+This vignette contains code to reproduce the modelling analysis and figures in the manuscript "Favipiravir-resistant virus shows potential for transmission", using data and functions in the `reassortment` package.
+
+## Main text
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(eval = FALSE)
+```
+
+```{r}
+library(reassortment)
+```
+
+```{r eval = TRUE, include = FALSE}
+devtools::load_all()
+```
+
+`run_default_pars` is the function used to conduct simulations.
+
+```{r}
+run_default_pars(sim_name = "default")
+```
+
+runs model simulations for default parameter values, which are those for Fig. 3a in the manuscript, and Table 1 in the Appendix.
+The results are saved in `results/default/results.rds` (the argument `sim_name` specifies the output folder).  The input parameter values (i.e. the default values in this case) are saved in `results/default/inputs.rds`.
+
+`results.rds` contains a data frame:
+
+```{r eval = TRUE}
+results <- readRDS("results/default/results.rds")
+head(results)
+tail(results)
+```
+
+`run` is a integer from 1 to 100 (the number of stochastic simulations per scenario).  There are 20 rows for each run number. Rows number 1, 2, 3... for a given run number contain the proportions of each strain for generations 1, 2, 3... `MM`, `MW`, `WM` and `WW` are the double mutant, PB1 K229R, PA P653L, and WT respectively.
+
+```{r eval = TRUE}
+plot_multirun_strains(results)
+```
+
+plots Fig. 3A in the manuscript.
+
+The optional arguments to `run_default_pars` change the default parameter values.
+
+* `MOI`: multiplicity of infection (default 1)
+* `iv`: initial proportion of each strain, in order of `MM, MW, WM, WW` (default `c(95,0,0,5)`)
+* `fitness_MW`: fitness of PB1 K229R relative to WT (default 0)
+* `fitness_WM`: fitness of PA P653L relative to WT (default 1.25)
+* `fitness_MM`: fitness of PB1 K229R PA P653L relative to WT (default 0)
+* `mutation_prob`: mutation probability per generation (default 2e-4)
+* `reassort`: logical.  if `TRUE` (default), both reassortment and mutation occur; if `FALSE`, only mutation occurs
+* `pop_size`: size of virus population (default 1e6)
+* `burst size`: burst size per cell at MOI = 1 (default 10)
+* `MOI_dependent_burst_size`: if `TRUE` (default), the burst size for a given cell scales linearly with the MOI for that cell; if `FALSE`, the burst size is independent of the MOI
+* `choose_strain_by_fitness`: if `FALSE` (default), the strain composition of a cell's progeny is independent of strain fitness; if `TRUE`, the probability of each progeny being of a given strain is proportinal to its fitness
+
+For example, to simulate Figs. 3B-D:
+
+```{r}
+run_default_pars(fitness_WM = 1, sim_name = "B")
+run_default_pars(fitness_MW = 1, sim_name = "C")
+run_default_pars(reassort = FALSE, sim_name = "D")
+```
+
+## Sensitivity analysis
+
+Fig. 1
+
+```{r}
+# enumerate all combinations of fitness_WM and reassort
+par_grid <- expand.grid(fitness_WM = c(1, 1.1, 1.5, 1.75, 2), reassort = c(FALSE, TRUE))
+par_grid$sim_name <- paste0(num2str(par_grid$fitness_WM), "_", par_grid$reassort)
+Map(run_default_pars, fitness_WM = par_grid$fitness_WM, 
+    reassort = par_grid$reassort, par_grid$sim_name)
+```
+
+Fig. 2
+```{r}
+par_grid <- expand.grid(fitness_MW = c(0.8, 0.9, 1.1, 1.2), reassort = c(FALSE, TRUE))
+par_grid$sim_name <- paste0(num2str(par_grid$fitness_MW), "_", par_grid$reassort)
+Map(run_default_pars, fitness_MW = par_grid$fitness_MW, 
+    reassort = par_grid$reassort, par_grid$sim_name)
+```
+
+Fig. 3
+
+```{r}
+par_grid <- expand.grid(mutation_prob = c(2e-3, 2e-5), reassort = c(FALSE, TRUE))
+par_grid$sim_name <- paste0(num2str(par_grid$mutation_prob), "_", par_grid$reassort)
+Map(run_default_pars, mutation_prob = par_grid$mutation_prob, 
+    reassort = par_grid$reassort, par_grid$sim_name)
+```
+
+Fig. 4
+
+```{r}
+par_grid <- expand.grid(MOI = .1, reassort = c(FALSE, TRUE))
+par_grid$sim_name <- paste0(num2str(par_grid$MOI), "_", par_grid$reassort)
+Map(run_default_pars, MOI = par_grid$MOI, 
+    reassort = par_grid$reassort, par_grid$sim_name)
+```
+
+```{r}
+par_grid <- expand.grid(MOI_dependent_burst_size = FALSE, reassort = c(FALSE, TRUE))
+par_grid$sim_name <- paste0(par_grid$MOI_dependent_burst_size, "_", par_grid$reassort)
+Map(run_default_pars, MOI_dependent_burst_size = par_grid$MOI_dependent_burst_size, 
+    reassort = par_grid$reassort, par_grid$sim_name)
+```
+
+```{r}
+par_grid <- expand.grid(choose_strain_by_fitness = TRUE, reassort = c(FALSE, TRUE))
+par_grid$sim_name <- paste0(par_grid$choose_strain_by_fitness, "_", par_grid$reassort)
+Map(run_default_pars, choose_strain_by_fitness = par_grid$choose_strain_by_fitness, 
+    reassort = par_grid$reassort, par_grid$sim_name)
+```
