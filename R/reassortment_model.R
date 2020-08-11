@@ -22,7 +22,7 @@
 #' @export
 run_default_pars <- function(MOI = 1,
                              iv = c(95,0,0,5),
-                             fitness_MW = 0,
+                             fitness_MW = 0.01,
                              fitness_WM = 1.25,
                              fitness_MM = 1,
                              mutation_prob = 2e-4,
