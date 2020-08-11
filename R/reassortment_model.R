@@ -62,7 +62,7 @@ run_default_pars <- function(MOI = 1,
     result <-   cbind(result, matrix(run_no, nrow = generations, ncol = 1, dimnames = list(NULL, "run")))
     result
   }
-  results <- parLapply_wrapper(run_parallel, parallel::detectCores(), sim_func)
+  results <- parLapply_wrapper(run_parallel, seq_len(n_replicates), sim_func)
   results <-   do.call(rbind, results)
   
   saveRDS(results, paste0(dir_name, "results.rds"))
