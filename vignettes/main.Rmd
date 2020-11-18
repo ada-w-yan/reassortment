@@ -56,9 +56,9 @@ The optional arguments to `run_default_pars` change the default parameter values
 
 * `MOI`: multiplicity of infection (default 1)
 * `iv`: initial proportion of each strain, in order of `MM, MW, WM, WW` (default `c(95,0,0,5)`)
-* `fitness_MW`: fitness of PB1 K229R relative to WT (default 0)
+* `fitness_MW`: fitness of PB1 K229R relative to WT (default 0.01)
 * `fitness_WM`: fitness of PA P653L relative to WT (default 1.25)
-* `fitness_MM`: fitness of PB1 K229R PA P653L relative to WT (default 0)
+* `fitness_MM`: fitness of PB1 K229R PA P653L relative to WT (default 1)
 * `mutation_prob`: mutation probability per generation (default 2e-4)
 * `reassort`: logical.  if `TRUE` (default), both reassortment and mutation occur; if `FALSE`, only mutation occurs
 * `pop_size`: size of virus population (default 1e6)
@@ -81,47 +81,47 @@ Fig. 1
 ```{r}
 # enumerate all combinations of fitness_WM and reassort
 par_grid <- expand.grid(fitness_WM = c(1, 1.1, 1.5, 1.75, 2), reassort = c(FALSE, TRUE))
-par_grid$sim_name <- paste0(num2str(par_grid$fitness_WM), "_", par_grid$reassort)
+par_grid$sim_name <- paste0("fitness_WM_", num2str(par_grid$fitness_WM), "_", par_grid$reassort)
 Map(run_default_pars, fitness_WM = par_grid$fitness_WM, 
-    reassort = par_grid$reassort, par_grid$sim_name)
+    reassort = par_grid$reassort, sim_name = par_grid$sim_name)
 ```
 
 Fig. 2
 ```{r}
-par_grid <- expand.grid(fitness_MW = c(0.8, 0.9, 1.1, 1.2), reassort = c(FALSE, TRUE))
-par_grid$sim_name <- paste0(num2str(par_grid$fitness_MW), "_", par_grid$reassort)
-Map(run_default_pars, fitness_MW = par_grid$fitness_MW, 
-    reassort = par_grid$reassort, par_grid$sim_name)
+par_grid <- expand.grid(fitness_MM = c(0.8, 0.9, 1.1, 1.2), reassort = c(FALSE, TRUE))
+par_grid$sim_name <- paste0(n"fitness_MM_", um2str(par_grid$fitness_MM), "_", par_grid$reassort)
+Map(run_default_pars, fitness_MM = par_grid$fitness_MM, 
+    reassort = par_grid$reassort, sim_name = par_grid$sim_name)
 ```
 
 Fig. 3
 
 ```{r}
 par_grid <- expand.grid(mutation_prob = c(2e-3, 2e-5), reassort = c(FALSE, TRUE))
-par_grid$sim_name <- paste0(num2str(par_grid$mutation_prob), "_", par_grid$reassort)
+par_grid$sim_name <- paste0("mutation_prob_", num2str(par_grid$mutation_prob), "_", par_grid$reassort)
 Map(run_default_pars, mutation_prob = par_grid$mutation_prob, 
-    reassort = par_grid$reassort, par_grid$sim_name)
+    reassort = par_grid$reassort, sim_name = par_grid$sim_name)
 ```
 
 Fig. 4
 
 ```{r}
 par_grid <- expand.grid(MOI = .1, reassort = c(FALSE, TRUE))
-par_grid$sim_name <- paste0(num2str(par_grid$MOI), "_", par_grid$reassort)
+par_grid$sim_name <- paste0("MOI_", num2str(par_grid$MOI), "_", par_grid$reassort)
 Map(run_default_pars, MOI = par_grid$MOI, 
-    reassort = par_grid$reassort, par_grid$sim_name)
+    reassort = par_grid$reassort, sim_name = par_grid$sim_name)
 ```
 
 ```{r}
 par_grid <- expand.grid(MOI_dependent_burst_size = FALSE, reassort = c(FALSE, TRUE))
-par_grid$sim_name <- paste0(par_grid$MOI_dependent_burst_size, "_", par_grid$reassort)
+par_grid$sim_name <- paste0("MOI_dependent_burst_size_", par_grid$MOI_dependent_burst_size, "_", par_grid$reassort)
 Map(run_default_pars, MOI_dependent_burst_size = par_grid$MOI_dependent_burst_size, 
     reassort = par_grid$reassort, par_grid$sim_name)
 ```
 
 ```{r}
 par_grid <- expand.grid(choose_strain_by_fitness = TRUE, reassort = c(FALSE, TRUE))
-par_grid$sim_name <- paste0(par_grid$choose_strain_by_fitness, "_", par_grid$reassort)
+par_grid$sim_name <- paste0("choose_strain_by_fitness_", par_grid$choose_strain_by_fitness, "_", par_grid$reassort)
 Map(run_default_pars, choose_strain_by_fitness = par_grid$choose_strain_by_fitness, 
     reassort = par_grid$reassort, par_grid$sim_name)
 ```

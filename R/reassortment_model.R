@@ -46,7 +46,7 @@ run_default_pars <- function(MOI = 1,
   dir_name <- ifelse(missing(hash),
                      make_results_folder(sim_name),
                      make_results_folder(sim_name, hash = hash))
-  
+
   inputs <- ls()
   inputs <- list_vars_from_environment(inputs)
   saveRDS(inputs, paste0(dir_name, "inputs.rds"))
@@ -66,6 +66,7 @@ run_default_pars <- function(MOI = 1,
   results <-   do.call(rbind, results)
   
   saveRDS(results, paste0(dir_name, "results.rds"))
+  browser()
   invisible(results)
 }
 
@@ -217,7 +218,6 @@ simulate_evolution <- function(iv, fitness, burst_size, n_cells,
       } else {
         prob_strain <- normalise(strains_in_cell)
       }
-      
       # old implementation of reassortment.  rmultinom at the strain level + reassort
       # produces less variance than rbinom at the segment level
       # if(one_strain_produced) {
@@ -248,12 +248,10 @@ simulate_evolution <- function(iv, fitness, burst_size, n_cells,
       }
       new_popn
     }
-    
     # apply the above function to all infected cells and combine the results
     virus_popn <- tapply(virus_popn[,"strain"], virus_popn[,"cell_no"], make_new_popn)
     virus_popn <- do.call(rbind, virus_popn) %>%
       colSums
-    
     # mutate the newly produced strain population
     if(mutation_prob > 0) {
       virus_popn <- mutate_popn(virus_popn)   
@@ -383,6 +381,7 @@ sum_strains <- function(strains) {
 make_and_package_segments <- function(prob_strain, burst_size) {
   strain_segments <- matrix(c(1, 1, 1, 0, 0, 1, 0, 0), ncol = 2, byrow = TRUE)
   prob_wt_segment <- colSums(strain_segments * prob_strain)
+  prob_wt_segment <- pmin(prob_wt_segment, 1) # gets rid of rounding errors
   # segments <- vnapply(prob_wt_segment, function(x) rbinom(1, burst_size, x))
   # strains <- numeric(length(prob_strain))
   # # pair WT PA segments[1] up with PB1s -- sample from segments[2] WT PB1s out of burst_size PB1s
@@ -394,7 +393,6 @@ make_and_package_segments <- function(prob_strain, burst_size) {
   # strains[2] <- rhyper(1, remaining_WT_PB1, remaining_MUT_PB1, burst_size - segments[1])
   # strains[4] <- burst_size - sum(strains)
   # stopifnot(all(strains >= 0))
-  
   
   segments <- vapply(prob_wt_segment, function(x) rbinom(burst_size, 1, x), numeric(burst_size))
   if(!is.matrix(segments)) {
