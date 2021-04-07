@@ -34,7 +34,7 @@ run_default_pars <- function(MOI = 1,
                              sim_name,
                              hash) {
   set.seed(2)
-  fitness <- c(1, fitness_MW, fitness_WM, fitness_MM)
+  fitness <- c(fitness_MM, fitness_MW, fitness_WM, 1)
   n_cells <- round(pop_size / MOI)
   generations <- 20
   coinfection <- TRUE
