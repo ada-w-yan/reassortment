@@ -66,7 +66,7 @@ run_default_pars <- function(MOI = 1,
   results <-   do.call(rbind, results)
   
   saveRDS(results, paste0(dir_name, "results.rds"))
-  browser()
+  
   invisible(results)
 }
 
